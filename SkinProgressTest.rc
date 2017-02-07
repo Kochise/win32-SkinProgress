@@ -1,0 +1,560 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 12, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\SkinProgressTest.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.fra\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\SkinProgressTest.ico"
+IDR_SKINPRTYPE          ICON    DISCARDABLE     "res\\SkinProgressTestDoc.ico"
+IDI_GRIP_SIZE           ICON    DISCARDABLE     "res\\grip_siz.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&Fichier"
+    BEGIN
+        MENUITEM "&Nouveau\tCtrl+N",            ID_FILE_NEW
+        MENUITEM "&Ouvrir...\tCtrl+O",          ID_FILE_OPEN
+        MENUITEM "&Enregistrer\tCtrl+S",        ID_FILE_SAVE
+        MENUITEM "En&registrer sous...",        ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Fichier récent",              ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Quitter",                    ID_APP_EXIT
+    END
+    POPUP "&Edition"
+    BEGIN
+        MENUITEM "&Annuler\tCtrl+Z",            ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Couper\tCtrl+X",             ID_EDIT_CUT
+        MENUITEM "&Copier\tCtrl+C",             ID_EDIT_COPY
+        MENUITEM "C&oller\tCtrl+V",             ID_EDIT_PASTE
+    END
+    POPUP "&Affichage"
+    BEGIN
+        MENUITEM "Barre d'é&tat",               ID_VIEW_STATUS_BAR
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&A propos de SkinProgressTest...", ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 230, 34
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "A propos de SkinProgressTest"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP,11,11,61,11,
+                    WS_EX_STATICEDGE
+    LTEXT           "SkinProgressTest version 1.1",IDC_STATIC,76,7,93,20,
+                    SS_NOPREFIX | SS_CENTERIMAGE
+    DEFPUSHBUTTON   "OK",IDOK,173,7,50,20,WS_GROUP,WS_EX_CLIENTEDGE
+END
+
+IDD_SKINPROGRESSTEST_FORM DIALOGEX 0, 0, 426, 182
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "CSkinProgress(Text =",IDC_STATIC,7,7,84,13,
+                    SS_CENTERIMAGE,WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14,0,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Dialog",IDC_BUTTON_DIALOG,5,40,45,14,0,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDIT_TEXT,95,5,130,14,ES_AUTOHSCROLL
+    LTEXT           ",",IDC_STATIC,231,5,8,15,SS_CENTERIMAGE
+    LTEXT           "Size =",IDC_STATIC,55,66,20,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_SIZE,95,66,45,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN_SIZE,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,66,
+                    11,14,WS_EX_CLIENTEDGE
+    LTEXT           ", // from -1280 to 1280",IDC_STATIC,156,66,74,15,
+                    SS_CENTERIMAGE
+    LTEXT           "Limit =",IDC_STATIC,55,20,20,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_LIMIT,95,20,45,14,ES_AUTOHSCROLL
+    CONTROL         "Spin2",IDC_SPIN_LIMIT,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,20,
+                    11,14,WS_EX_CLIENTEDGE
+    LTEXT           ", // from 1 to 65535",IDC_STATIC,156,20,64,15,
+                    SS_CENTERIMAGE
+    LTEXT           "Pane =",IDC_STATIC,55,50,24,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_PANE,95,50,45,14,ES_AUTOHSCROLL
+    CONTROL         "Spin3",IDC_SPIN_PANE,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,50,
+                    11,14,WS_EX_CLIENTEDGE
+    LTEXT           ", // from 0 to 4",IDC_STATIC,157,50,48,15,
+                    SS_CENTERIMAGE
+    LTEXT           "Progress =",IDC_STATIC,55,35,34,15,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PROGRESS,95,35,130,117,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           ",",IDC_STATIC,231,34,8,15,SS_CENTERIMAGE
+    LTEXT           "Bitmap =",IDC_STATIC,55,80,28,15,SS_CENTERIMAGE
+    CONTROL         "Default",IDC_RADIO_DEFAULT,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,95,85,39,10
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    85,60,10
+    CONTROL         "IDB_BMP_AQUA",IDC_RADIO_AQUA,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,100,71,10
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    100,60,10
+    CONTROL         "IDB_BMP_LUNA",IDC_RADIO_LUNA,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,115,71,10
+    CONTROL         132,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    114,60,10
+    CONTROL         "IDB_BMP_PHOTON",IDC_RADIO_PHOTON,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,130,82,10
+    CONTROL         130,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    130,60,10
+    LTEXT           ",",IDC_STATIC,245,128,8,15,SS_CENTERIMAGE
+    GROUPBOX        "",IDC_STATIC,49,139,200,20
+    LTEXT           "Reverse =",IDC_HEAD_REVERSE,55,147,34,8
+    CONTROL         "// CONDITIONAL COMPILATED !",IDC_CHECK_REVERSE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,95,147,148,8
+    LTEXT           ");",IDC_BOTTOM_RIGHT,251,150,8,15,SS_CENTERIMAGE
+    CTEXT           "Pane\n0",IDC_PANE0,121,167,29,15
+    CTEXT           "Pane\n1",IDC_PANE1,301,167,29,15
+    CTEXT           "Pane\n2",IDC_PANE2,357,167,24,15
+    CTEXT           "Pane\n3",IDC_PANE3,377,167,24,15
+    CTEXT           "Pane\n4",IDC_PANE4,395,167,24,15
+END
+
+IDD_SKINPROGRESSTEST_DIAL DIALOGEX 0, 0, 398, 209
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+CAPTION "SkinProgressTest Boite de Dialogue"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "CSkinProgress(Bar Wnd =",IDC_STATIC,7,7,84,13,
+                    SS_CENTERIMAGE,WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14,0,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "End",IDOK,5,40,45,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_BAR,95,5,130,95,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           ",",IDC_STATIC,230,5,8,15,SS_CENTERIMAGE
+    LTEXT           "Limit =",IDC_STATIC,55,20,20,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_LIMIT,95,20,45,14,ES_AUTOHSCROLL
+    CONTROL         "Spin2",IDC_SPIN_LIMIT,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,140,20,
+                    11,14,WS_EX_CLIENTEDGE
+    LTEXT           ", // from 1 to 65535",IDC_STATIC,156,20,69,15,
+                    SS_CENTERIMAGE
+    LTEXT           "Bitmap =",IDC_STATIC,55,35,28,15,SS_CENTERIMAGE
+    CONTROL         "Default",IDC_RADIO_DEFAULT,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,95,40,39,10
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    40,60,10
+    CONTROL         "IDB_BMP_AQUA",IDC_RADIO_AQUA,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,55,71,10
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    55,60,10
+    CONTROL         "IDB_BMP_LUNA",IDC_RADIO_LUNA,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,70,71,10
+    CONTROL         132,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    69,60,10
+    CONTROL         "IDB_BMP_PHOTON",IDC_RADIO_PHOTON,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,85,82,10
+    CONTROL         130,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,180,
+                    85,60,10
+    LTEXT           ",",IDC_STATIC,245,80,8,15,SS_CENTERIMAGE
+    GROUPBOX        "",IDC_STATIC,50,95,200,20
+    LTEXT           "Reverse =",IDC_HEAD_REVERSE,55,102,34,8
+    CONTROL         ", // CONDITIONAL COMPILATED !",IDC_CHECK_REVERSE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,95,102,150,8
+    LTEXT           "Text Wnd =",IDC_HEAD_TXTWND,55,120,40,13,SS_CENTERIMAGE,
+                    WS_EX_TRANSPARENT
+    COMBOBOX        IDC_COMBO_TEXT,95,120,130,95,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           ",",IDC_COMA_TXTWND,230,120,8,15,SS_CENTERIMAGE
+    LTEXT           "Text =",IDC_HEAD_TXT,55,135,28,15,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_TEXT,95,135,130,14,ES_AUTOHSCROLL
+    LTEXT           ",",IDC_COMA_TXT,230,135,8,15,SS_CENTERIMAGE
+    LTEXT           "Progress =",IDC_HEAD_PROGRESS,55,150,34,15,
+                    SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_PROGRESS,95,150,130,105,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           ");",IDC_BOTTOM_RIGHT,250,150,8,15,SS_CENTERIMAGE
+    LTEXT           "IDC_PROGRESS_1",IDC_HEAD_P1,5,171,65,12
+    LTEXT           "PB1",IDC_PROGRESS_1,76,171,315,12,0,WS_EX_STATICEDGE
+    LTEXT           "IDC_TEXTPANE_1",IDC_HEAD_T1,5,189,63,12
+    LTEXT           "TP1",IDC_TEXTPANE_1,75,189,300,12,0,WS_EX_STATICEDGE
+    LTEXT           "IDC_PROGRESS_2",IDC_STATIC,266,5,65,10
+    LTEXT           "PB2",IDC_PROGRESS_2,266,15,12,150,0,WS_EX_STATICEDGE
+    LTEXT           "IDC_TEXTPANE_2",IDC_STATIC,285,15,63,8
+    LTEXT           "TP2",IDC_TEXTPANE_2,286,25,105,140,0,WS_EX_STATICEDGE
+    ICON            IDI_GRIP_SIZE,IDC_ICON_GRIP_SIZE,376,189,20,20
+    PUSHBUTTON      "Scanned Skin",IDC_SCANSKIN,5,60,55,14,0,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_SCANNED_SKIN DIALOGEX 0, 0, 72, 287
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,8,8,56,16,0,WS_EX_CLIENTEDGE
+    LTEXT           "",IDC_THERMO,8,32,28,247
+    LTEXT           "",IDC_PEN,48,31,16,247
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040C04B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "Application MFC SkinProgressTest\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "SkinProgressTest\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "SkinProgressTest.EXE\0"
+            VALUE "ProductName", "Application SkinProgressTest\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x40c, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SCANNED_SKIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 8
+        VERTGUIDE, 36
+        VERTGUIDE, 48
+        VERTGUIDE, 64
+        TOPMARGIN, 8
+        BOTTOMMARGIN, 279
+        HORZGUIDE, 31
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BMP_AQUA            BITMAP  DISCARDABLE     "res\\BarAqua.bmp"
+IDB_BMP_LUNA            BITMAP  DISCARDABLE     "res\\BarLuna.bmp"
+IDB_BMP_PHOTON          BITMAP  DISCARDABLE     "res\\BarPhoton.bmp"
+IDB_BMP_THERMO          BITMAP  DISCARDABLE     "res\\BarThermo.bmp"
+IDB_BMP_PENCIL          BITMAP  DISCARDABLE     "res\\BarPencil.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_SKINPROGRESSTEST_FORM DLGINIT
+BEGIN
+    IDC_COMBO_PROGRESS, 0x403, 16, 0
+0x202d, 0x5363, 0x5450, 0x415f, 0x5455, 0x534f, 0x5a49, 0x0045, 
+    IDC_COMBO_PROGRESS, 0x403, 13, 0
+0x202d, 0x5363, 0x5450, 0x545f, 0x4d49, 0x4445, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 15, 0
+0x202d, 0x5363, 0x5450, 0x505f, 0x5245, 0x4543, 0x544e, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 10, 0
+0x5363, 0x5450, 0x4e5f, 0x4e4f, 0x0045, 
+    IDC_COMBO_PROGRESS, 0x403, 13, 0
+0x5363, 0x5450, 0x505f, 0x5245, 0x4543, 0x544e, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 11, 0
+0x5363, 0x5450, 0x545f, 0x4d49, 0x4445, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 14, 0
+0x5363, 0x5450, 0x415f, 0x5455, 0x534f, 0x5a49, 0x0045, 
+    0
+END
+
+IDD_SKINPROGRESSTEST_DIAL DLGINIT
+BEGIN
+    IDC_COMBO_BAR, 0x403, 15, 0
+0x4449, 0x5f43, 0x5250, 0x474f, 0x4552, 0x5353, 0x315f, "\000" 
+    IDC_COMBO_BAR, 0x403, 15, 0
+0x4449, 0x5f43, 0x5250, 0x474f, 0x4552, 0x5353, 0x325f, "\000" 
+    IDC_COMBO_TEXT, 0x403, 1, 0
+"\000" 
+    IDC_COMBO_TEXT, 0x403, 15, 0
+0x4449, 0x5f43, 0x4554, 0x5458, 0x4150, 0x454e, 0x315f, "\000" 
+    IDC_COMBO_TEXT, 0x403, 15, 0
+0x4449, 0x5f43, 0x4554, 0x5458, 0x4150, 0x454e, 0x325f, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 16, 0
+0x202d, 0x5363, 0x5450, 0x415f, 0x5455, 0x534f, 0x5a49, 0x0045, 
+    IDC_COMBO_PROGRESS, 0x403, 13, 0
+0x202d, 0x5363, 0x5450, 0x545f, 0x4d49, 0x4445, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 15, 0
+0x202d, 0x5363, 0x5450, 0x505f, 0x5245, 0x4543, 0x544e, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 10, 0
+0x5363, 0x5450, 0x4e5f, 0x4e4f, 0x0045, 
+    IDC_COMBO_PROGRESS, 0x403, 13, 0
+0x5363, 0x5450, 0x505f, 0x5245, 0x4543, 0x544e, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 11, 0
+0x5363, 0x5450, 0x545f, 0x4d49, 0x4445, "\000" 
+    IDC_COMBO_PROGRESS, 0x403, 14, 0
+0x5363, 0x5450, 0x415f, 0x5455, 0x534f, 0x5a49, 0x0045, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "SkinProgressTest\n\nSkinPr\n\n\nSkinProgressTest.Document\nSkinPr Document"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "SkinProgressTest"
+    AFX_IDS_IDLEMESSAGE     "Prêt"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "MAJ"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "DEF"
+    ID_INDICATOR_OVR        "ECR"
+    ID_INDICATOR_REC        "ENR"
+    ID_INDICATOR_PROGRESS   "STATUS_PROGRESS_BAR"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Crée un nouveau document\nNouveau"
+    ID_FILE_OPEN            "Ouvre un document existant\nOuvrir"
+    ID_FILE_CLOSE           "Ferme le document actif\nFermer"
+    ID_FILE_SAVE            "Enregistre le document actif\nEnregistrer"
+    ID_FILE_SAVE_AS         "Enregistre le document actif sous un nouveau nom\nEnregistrer sous"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Affiche des informations sur le programme, le numéro de version et le copyright\nA propos de"
+    ID_APP_EXIT             "Ferme l'application ; propose d'enregistrer les documents\nQuitter"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Ouvre ce document"
+    ID_FILE_MRU_FILE2       "Ouvre ce document"
+    ID_FILE_MRU_FILE3       "Ouvre ce document"
+    ID_FILE_MRU_FILE4       "Ouvre ce document"
+    ID_FILE_MRU_FILE5       "Ouvre ce document"
+    ID_FILE_MRU_FILE6       "Ouvre ce document"
+    ID_FILE_MRU_FILE7       "Ouvre ce document"
+    ID_FILE_MRU_FILE8       "Ouvre ce document"
+    ID_FILE_MRU_FILE9       "Ouvre ce document"
+    ID_FILE_MRU_FILE10      "Ouvre ce document"
+    ID_FILE_MRU_FILE11      "Ouvre ce document"
+    ID_FILE_MRU_FILE12      "Ouvre ce document"
+    ID_FILE_MRU_FILE13      "Ouvre ce document"
+    ID_FILE_MRU_FILE14      "Ouvre ce document"
+    ID_FILE_MRU_FILE15      "Ouvre ce document"
+    ID_FILE_MRU_FILE16      "Ouvre ce document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Passe au volet de fenêtre suivant\nVolet suivant"
+    ID_PREV_PANE            "Revient au volet précédent\nVolet précédent"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Réorganise les fenêtres en une mosaïque\nMosaïque"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Efface la sélection\nEffacer"
+    ID_EDIT_CLEAR_ALL       "Efface tout\nEffacer tout"
+    ID_EDIT_COPY            "Copie la sélection et la place dans le Presse-papiers\nCopier"
+    ID_EDIT_CUT             "Supprime la sélection et la place dans le Presse-papiers\nCouper"
+    ID_EDIT_FIND            "Recherche le texte spécifié\nRechercher"
+    ID_EDIT_PASTE           "Insère le contenu du Presse-papiers\nColler"
+    ID_EDIT_REPEAT          "Répète la dernière action\nRépéter"
+    ID_EDIT_REPLACE         "Remplace le texte spécifique par un texte différent\nRemplacer"
+    ID_EDIT_SELECT_ALL      "Sélectionne le document entier\nSélectionner tout"
+    ID_EDIT_UNDO            "Annule la dernière action\nAnnuler"
+    ID_EDIT_REDO            "Rétablit l'action précédemment annulée\nRétablir"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_STATUS_BAR      "Affiche ou masque la barre d'état\nBarre d'état"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change la taille de la fenêtre"
+    AFX_IDS_SCMOVE          "Change la position de la fenêtre"
+    AFX_IDS_SCMINIMIZE      "Réduit la fenêtre en icône"
+    AFX_IDS_SCMAXIMIZE      "Agrandit la fenêtre au format de l'écran"
+    AFX_IDS_SCNEXTWINDOW    "Passe à la fenêtre de document suivante"
+    AFX_IDS_SCPREVWINDOW    "Passe à la fenêtre de document précédente"
+    AFX_IDS_SCCLOSE         "Ferme la fenêtre active et propose l'enregistrement des documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restaure la fenêtre à sa taille d'origine"
+    AFX_IDS_SCTASKLIST      "Active la liste des tâches"
+END
+
+#endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE 12, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\SkinProgressTest.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.fra\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
