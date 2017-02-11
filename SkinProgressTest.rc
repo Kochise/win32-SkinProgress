@@ -138,13 +138,13 @@ END
 IDD_ABOUTBOX DIALOGEX 0, 0, 230, 34
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "A propos de SkinProgressTest"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         131,IDC_STATIC,"Static",SS_BITMAP,11,11,61,11,
                     WS_EX_STATICEDGE
-    LTEXT           "SkinProgressTest version 1.1",IDC_STATIC,76,7,93,20,
+    LTEXT           "SkinProgressTest version 1.2",IDC_STATIC,76,7,93,20,
                     SS_NOPREFIX | SS_CENTERIMAGE
-    DEFPUSHBUTTON   "OK",IDOK,173,7,50,20,WS_GROUP,WS_EX_CLIENTEDGE
+    DEFPUSHBUTTON   "OK",IDOK,173,7,50,20,WS_GROUP
 END
 
 IDD_SKINPROGRESSTEST_FORM DIALOGEX 0, 0, 426, 182
@@ -153,29 +153,29 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "CSkinProgress(Text =",IDC_STATIC,7,7,84,13,
                     SS_CENTERIMAGE,WS_EX_TRANSPARENT
-    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14,0,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Dialog",IDC_BUTTON_DIALOG,5,40,45,14,0,WS_EX_CLIENTEDGE
+    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14
+    PUSHBUTTON      "Dialog",IDC_BUTTON_DIALOG,5,40,45,14
     EDITTEXT        IDC_EDIT_TEXT,95,5,130,14,ES_AUTOHSCROLL
     LTEXT           ",",IDC_STATIC,231,5,8,15,SS_CENTERIMAGE
     LTEXT           "Size =",IDC_STATIC,55,66,20,15,SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_SIZE,95,66,45,14,ES_AUTOHSCROLL
     CONTROL         "Spin1",IDC_SPIN_SIZE,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,66,
-                    11,14,WS_EX_CLIENTEDGE
+                    11,14
     LTEXT           ", // from -1280 to 1280",IDC_STATIC,156,66,74,15,
                     SS_CENTERIMAGE
     LTEXT           "Limit =",IDC_STATIC,55,20,20,15,SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_LIMIT,95,20,45,14,ES_AUTOHSCROLL
     CONTROL         "Spin2",IDC_SPIN_LIMIT,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,20,
-                    11,14,WS_EX_CLIENTEDGE
+                    11,14
     LTEXT           ", // from 1 to 65535",IDC_STATIC,156,20,64,15,
                     SS_CENTERIMAGE
     LTEXT           "Pane =",IDC_STATIC,55,50,24,15,SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_PANE,95,50,45,14,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_PANE,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,141,50,
-                    11,14,WS_EX_CLIENTEDGE
+                    11,14
     LTEXT           ", // from 0 to 4",IDC_STATIC,157,50,48,15,
                     SS_CENTERIMAGE
     LTEXT           "Progress =",IDC_STATIC,55,35,34,15,SS_CENTERIMAGE
@@ -220,8 +220,8 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "CSkinProgress(Bar Wnd =",IDC_STATIC,7,7,84,13,
                     SS_CENTERIMAGE,WS_EX_TRANSPARENT
-    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14,0,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "End",IDOK,5,40,45,14,0,WS_EX_CLIENTEDGE
+    DEFPUSHBUTTON   "Test",IDC_BUTTON_TEST,5,20,45,14
+    PUSHBUTTON      "End",IDOK,5,40,45,14
     COMBOBOX        IDC_COMBO_BAR,95,5,130,95,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           ",",IDC_STATIC,230,5,8,15,SS_CENTERIMAGE
@@ -229,7 +229,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_LIMIT,95,20,45,14,ES_AUTOHSCROLL
     CONTROL         "Spin2",IDC_SPIN_LIMIT,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,140,20,
-                    11,14,WS_EX_CLIENTEDGE
+                    11,14
     LTEXT           ", // from 1 to 65535",IDC_STATIC,156,20,69,15,
                     SS_CENTERIMAGE
     LTEXT           "Bitmap =",IDC_STATIC,55,35,28,15,SS_CENTERIMAGE
@@ -276,16 +276,15 @@ BEGIN
     LTEXT           "IDC_TEXTPANE_2",IDC_STATIC,285,15,63,8
     LTEXT           "TP2",IDC_TEXTPANE_2,286,25,105,140,0,WS_EX_STATICEDGE
     ICON            IDI_GRIP_SIZE,IDC_ICON_GRIP_SIZE,376,189,20,20
-    PUSHBUTTON      "Scanned Skin",IDC_SCANSKIN,5,60,55,14,0,
-                    WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Scanned Skin",IDC_SCANSKIN,5,60,55,14
 END
 
-IDD_SCANNED_SKIN DIALOGEX 0, 0, 72, 287
+IDD_SCANNED_SKIN DIALOG DISCARDABLE  0, 0, 72, 287
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,8,8,56,16,0,WS_EX_CLIENTEDGE
+    DEFPUSHBUTTON   "OK",IDOK,8,8,56,16
     LTEXT           "",IDC_THERMO,8,32,28,247
     LTEXT           "",IDC_PEN,48,31,16,247
 END
@@ -298,8 +297,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,5,4,15
+ PRODUCTVERSION 1,0,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -312,17 +311,20 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040C04B0"
+        BLOCK "040c04b0"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "Application MFC SkinProgressTest\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "2, 5, 4, 15\0"
             VALUE "InternalName", "SkinProgressTest\0"
-            VALUE "LegalCopyright", "Copyright (C) 2003\0"
+            VALUE "LegalCopyright", "Copyright (C) 2005\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "SkinProgressTest.EXE\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Application SkinProgressTest\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "1, 0, 0, 2\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -420,6 +422,13 @@ BEGIN
     0
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// 24
+//
+
+1                       24      DISCARDABLE     "res\\xptheme.bin"
 
 /////////////////////////////////////////////////////////////////////////////
 //

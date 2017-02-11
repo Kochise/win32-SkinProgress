@@ -207,6 +207,10 @@ SOURCE=.\res\SkinProgressTest.rc2
 
 SOURCE=.\res\SkinProgressTestDoc.ico
 # End Source File
+# Begin Source File
+
+SOURCE=.\res\xptheme.bin
+# End Source File
 # End Group
 # Begin Source File
 

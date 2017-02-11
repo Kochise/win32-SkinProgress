@@ -2,13 +2,16 @@
 /* NAME              : SkinProgress.cpp                                       */
 /* PURPOSE           : Place a bitmapped progress bar into the status bar     */
 /* CREATED_BY        : Kochise (kochise@caramail.com)                         */
-/* CREATION_DATE     : $C_DATE=YYYY/MM/DD$ 22003/05/02                        */
+/* CREATION_DATE     : $C_DATE=YYYY/MM/DD$ 2003/05/02                         */
 /* MODIFIED_BY       : Kochise (kochise@caramail.com)                         */
 /* MODIFICATION_DATE : $M_DATE=YYYY/MM/DD$ 2003/07/12                         */
 /* LANGUAGE          : MFC Visual C++ 6                                       */
 /* MPROC_TYPE        : Microsoft Windows compatible computer                  */
 /*                                                                            */
 /*
+
+ *   Rev 1.03 : January 10 2005 14:01:53 (Kochise)
+
 $Log: E:\Projects\NoeZooArc\SkinProgressTest.zoo\SkinProgressTest\SkinProgress.cpp.adiff $
  *
  *   Rev 1.02 : July 12 2003 14:01:53 (Kochise)
@@ -129,16 +132,19 @@ static char THIS_FILE[] = __FILE__;
 // no z...
 // m_Member      : m_ = Member
 // o_Output      : o_ = Output
+// l_Local       : l_ = Local
 // ...           : use your imagination
 
 // aArray        : a  = Array    (array)
-// bBool         : b  = Boolean  (boolean, true/false)
+// bBool         : b  = Boolean  (boolean, TRUE/FALSE)
 // cConstant     : c  = Constant (constant, whatever...)
 // dDefine       : d  = Define   (simple define or defined value)
+// eEnum         : e  = Enum     (enum list element)
 // nNumber       : n  = Number   (char, long, int, whatever...)
 // oObject       : o  = Object   (C++ class)
 // pPointer      : p  = Pointer  (typicaly a 32 bits ulong address)
 // sStruct       : s  = Struct   (structure)
+// tTemplate     : t  = Template (template)
 // uUnion        : u  = Union    (join two or more values of the same size under a common name)
 
 // poRemoteClass : po = Pointer on Object
@@ -153,28 +159,30 @@ static char THIS_FILE[] = __FILE__;
 
 // TYPICAL LIFE TIME
 // 
-// CSkinProgress(...) -------> StepIt() ----------------------------> ~CSkinProgress()   USER
-//   |                           |                                       |               SIDE
-// ..|...........................|.......................................|.........................
-//   |                           |                                       |
-//   '-> Create(...)             |                                       '-> Clear()     OBJECT
-//         |                     |                                                       SIDE
-//         +-> GetStatusBar()    |
-//         +-> SetRange(...)     |
-//         +-> SetBitmap(...)    '----------->
-//         '---------------------------------> RefreshPanes() --------,
-//         ,--------------------------------->   |                    |
-//         |                               ,->   |                    |
-//         |                               |     |                    |
-//         |                               |     +-> GetStatusBar()   |
-//         |                               |     +-> GetTimed(...)    |
-//         |                               |     '-> CompactText(...) |
-// ........|...............................|..........................|............................
-//         |                               |                          |                  WINDOWS
-//       OnSizing(...) -> OnSize(...)    OnEraseBkgnd(...)            '-> OnPaint()      SIDE
+// USER   CSkinProgress(...) -----> StepIt() -----> ~CSkinProgress()
+// SIDE     |                         |                |
+// .........|.........................|................|.......................
+//          |                         |                |
+// OBJECT   '-> Create(...)           |                '-> _Clear()
+// SIDE           |                   |
+//                +-> _GetStatusBar() |
+//                +-> SetRange(...)   |
+//                +-> SetBitmap(...)  '->
+//                '---------------------> RefreshPanes() ---------,
+//                ,--------------------->   |                     |
+//                |                 ,--->   |                     |
+//                |                 |       |                     |
+//                |                 |       +-> _GetStatusBar()   |
+//                |                 |       +-> _GetTimed(...)    |
+//                |                 |       '-> _CompactText(...) |
+// ...............|.................|.............................|............
+// WINDOWS        |                 |                             |
+// SIDE         OnSizing(...)     OnEraseBkgnd(...)               '-> OnPaint()
+//                |
+//                '-> OnSize(...)
 
 #ifndef dCSP_RESOURCE_BITMAP
-/*** anAQUA_BITMAP ************************************************************/
+/*** g_anAQUA_BITMAP **********************************************************/
 /* Purpose : The default embedded progress bar image, if resource bitmap not  */
 /*           used instead.                                                    */
 /* Unit    : unsigned char                                                    */
@@ -182,7 +190,7 @@ static char THIS_FILE[] = __FILE__;
 /* List    : None                                                             */
 /* Example : None                                                             */
 /******************************************************************************/
-unsigned char anAQUA_BITMAP[5760] =
+unsigned char g_anAQUA_BITMAP[5760] =
 { // B,    G,    R,    A -> Set to 0xFF for CAlphaBlendBitmap
   0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF,
   0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF, 0xBD, 0xBD, 0xBD, 0xFF,
@@ -547,7 +555,7 @@ unsigned char anAQUA_BITMAP[5760] =
 };
 
 /*** sAQUA_BITMAP *************************************************************/
-/* Purpose : anAQUA_BITMAP's image header for CBitmap::CreateBitmapIndirect   */
+/* Purpose : g_anAQUA_BITMAP's image header for CBitmap::CreateBitmapIndirect */
 /* Unit    : BITMAP                                                           */
 /* Range   : structure list                                                   */
 /* List    :  0 - int            bmType       : bitmap type (0)               */
@@ -563,25 +571,24 @@ unsigned char anAQUA_BITMAP[5760] =
 /*           as long as the size of the array remains divisible by 2...       */
 /******************************************************************************/
 BITMAP sAQUA_BITMAP =
-{
-  0,            // bmType
-  90,           // bmWidth
-  16,           // bmHeight
-  360,          // bmWidthBytes
-  1,            // bmPlanes
-  32,           // bmBitsPixel
-  anAQUA_BITMAP // bmBits
+{ 0               // bmType
+, 90              // bmWidth
+, 16              // bmHeight
+, 360             // bmWidthBytes
+, 1               // bmPlanes
+, 32              // bmBitsPixel
+, g_anAQUA_BITMAP // bmBits
 };
 #endif // dCSP_RESOURCE_BITMAP
 
-/*** anThreeDots **************************************************************/
+/*** g_anThreeDots ************************************************************/
 /* Purpose : dots for reduced string                                          */
 /* Unit    : char                                                             */
 /* Range   : [0-127] - LIMITED selection                                      */
 /* List    : None                                                             */
 /* Example : None                                                             */
 /******************************************************************************/
-const char anThreeDots[] = "...";
+const char g_anThreeDots[] = "...";
 
 // *** CONSTRUCTORS ***
 
@@ -603,7 +610,7 @@ const char anThreeDots[] = "...";
 /*                   i_nPane        = 0            - Share the text pane      */
 /*                   i_nSize        = 200          - 200 pixels FORCED WIDTH  */
 /*                   i_poBitmap     = NULL         - USE EMBEDDED BITMAP      */
-/*                <> i_bReverse     = false        - normal display           */
+/*                <> i_bReverse     = FALSE        - normal display           */
 /* Behavior      : A - Create the progress bar using default parameters       */
 /*----------------------------------------------------------------------------*/
 /* PROC CSkinProgress                                                         */
@@ -612,16 +619,16 @@ const char anThreeDots[] = "...";
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 CSkinProgress::CSkinProgress
-( // Default constructor
+(
 )
-{
+{ // Default constructor
 
   // Init
 
   // Process
 
 // A..... Create a default progress bar in Status Bar with "Work in progress..." as text
-  ProgressInStatusBar("Work in progress");
+  _ProgressInStatusBar("Work in progress");
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
@@ -650,34 +657,32 @@ CSkinProgress::CSkinProgress
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 CSkinProgress::CSkinProgress
-( // Default constructor with parameters for status bar usage
-  LPCTSTR     i_poStrMessage, // Text to display
-  int         i_nUpper,       // = 100          : Default range from 0 to i_nUpper
-  int         i_nProgress,    // = cSPT_PERCENT : Message type to add to the text
-  int         i_nPane,        // = 0            : Pane number in which display the progress bar
-  int         i_nSize,        // = 200          : Size of the progress bar if in pane 0
-  CBitmap*    i_poBitmap      // = NULL         : Pointer to a user bitmap
+( LPCTSTR  i_poStrMessage // Text to display
+, int      i_nUpper       // = 100          : Default range from 0 to i_nUpper
+, int      i_nProgress    // = cSPT_PERCENT : Message type to add to the text
+, int      i_nPane        // = 0            : Pane number in which display the progress bar
+, int      i_nSize        // = 200          : Size of the progress bar if in pane 0
+, CBitmap* i_poBitmap     // = NULL         : Pointer to a user bitmap
 #ifdef dCSP_SLIDERBAR_METHOD
- ,BOOL        i_bReverse      // = false        : Reverse display of the progress bar
+, BOOL     i_bReverse     // = FALSE        : Reverse display of the progress bar
 #endif // dCSP_SLIDERBAR_METHOD
 )
-{
+{ // Default constructor with parameters for status bar usage
 
   // Init
 
   // Process
 
 // A..... Create the progress bar using user's parameters
-  ProgressInStatusBar
-  (
-    i_poStrMessage,
-    i_nUpper,
-    i_nProgress,
-    i_nPane,
-    i_nSize,
-    i_poBitmap
+  _ProgressInStatusBar
+  ( i_poStrMessage
+  , i_nUpper
+  , i_nProgress
+  , i_nPane
+  , i_nSize
+  , i_poBitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-   ,i_bReverse
+  , i_bReverse
 #endif // dCSP_SLIDERBAR_METHOD
   );
 }
@@ -711,35 +716,33 @@ CSkinProgress::CSkinProgress
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 #ifdef dCSP_DIALOG_PROGRESS
 CSkinProgress::CSkinProgress
-( // Default constructor with parameters for dialog usage
-  CWnd*       i_poWndProgress, // Pointer to the anchor CWnd to use for the progress bar
-  int         i_nUpper,        // = 100,      : Default range from 0 to i_nUpper
-  CBitmap*    i_poBitmap,      // = NULL      : Pointer to a user bitmap
+( CWnd*    i_poWndProgress // Pointer to the anchor CWnd to use for the progress bar
+, int      i_nUpper        // = 100,      : Default range from 0 to i_nUpper
+, CBitmap* i_poBitmap      // = NULL      : Pointer to a user bitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-  BOOL        i_bReverse,      // = false,    : Reverse display of the progress bar
+, BOOL     i_bReverse      // = FALSE,    : Reverse display of the progress bar
 #endif // dCSP_SLIDERBAR_METHOD
-  CWnd*       i_poWndMessage,  // = NULL,     : Pointer to the anchor CWnd to use for the text pane
-  LPCTSTR     i_poStrMessage,  // = NULL      : Text to display,
-  int         i_nProgress      // = cSPT_NONE : Message type to add to the text
+, CWnd*    i_poWndMessage  // = NULL,     : Pointer to the anchor CWnd to use for the text pane
+, LPCTSTR  i_poStrMessage  // = NULL      : Text to display,
+, int      i_nProgress     // = cSPT_NONE : Message type to add to the text
 )
-{
+{ // Default constructor with parameters for dialog usage
 
   // Init
 
   // Process
 
 // A..... Create the progress bar using user's parameters
-  ProgressInDialog
-  (
-    i_poWndProgress,
-    i_nUpper, 
-    i_poBitmap,
+  _ProgressInDialog
+  ( i_poWndProgress
+  , i_nUpper
+  , i_poBitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-    i_bReverse,
+  , i_bReverse
 #endif // dCSP_SLIDERBAR_METHOD
-    i_poWndMessage,
-    i_poStrMessage,
-    i_nProgress
+  , i_poWndMessage
+  , i_poStrMessage
+  , i_nProgress
   );
 }
 #endif // dCSP_DIALOG_PROGRESS
@@ -747,12 +750,12 @@ CSkinProgress::CSkinProgress
 // *** INITIALIZATORS ***
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : CreateCommon                                               */
+/* Name          : _CreateCommon                                              */
 /* Role          : Initialize the progress with its basic parameters          */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error during progress bar creation        */
-/*                          true  : Progress bar created                      */
+/*                   BOOL = FALSE : Error during progress bar creation        */
+/*                          TRUE  : Progress bar created                      */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -771,7 +774,7 @@ CSkinProgress::CSkinProgress
 /*                 E - Set the refresh timer                                  */
 /*                 F - Resize the text and display the whole things           */
 /*----------------------------------------------------------------------------*/
-/* PROC CreateCommon                                                          */
+/* PROC _CreateCommon                                                         */
 /*                                                                            */
 /* A..... Set base values                                                     */
 /* B..... Set the bitmap                                                      */
@@ -781,103 +784,109 @@ CSkinProgress::CSkinProgress
 /* F..... Resize the text and display the whole things                        */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-BOOL CSkinProgress::CreateCommon
-(
-  LPCTSTR  i_poStrMessage,
-  int      i_nUpper,       // = 100
-  int      i_nProgress,    // = cSPT_PERCENT
-  CBitmap* i_poBitmap      // = NULL
+BOOL CSkinProgress::_CreateCommon
+( LPCTSTR  i_poStrMessage
+, int      i_nUpper       // = 100
+, int      i_nProgress    // = cSPT_PERCENT
+, CBitmap* i_poBitmap     // = NULL
 #ifdef dCSP_SLIDERBAR_METHOD
- ,BOOL     i_bReverse      // = false
+, BOOL     i_bReverse     // = FALSE
 #endif // dCSP_SLIDERBAR_METHOD
 )
 {
   // Init
 
 // A..... Set base values
-  m_poBaseBmp       = NULL;
-  m_poCompatibleBmp = NULL;
-  m_poStretchBmp    = NULL;
-  m_poProgressBmp   = NULL;
-  m_oStrPrevMessage = "";
-  m_oRectPane.SetRect(0, 0, 0, 0);
+  mp_poBaseBmp       = NULL;
+  mp_poCompatibleBmp = NULL;
+  mp_poStretchBmp    = NULL;
+  mp_poProgressBmp   = NULL;
+  mp_oStrPrevMessage = "";
+  mp_oRectPane.SetRect(0, 0, 0, 0);
 
 // Process + Return
 
 // B..... Set the bitmap
-  if(
-      !SetBitmap
-      (
-        i_poBitmap
+  if
+  (
+    SetBitmap
+    ( i_poBitmap
 #ifndef dCSP_TIMED_REDRAW
-       ,false
+    , FALSE
 #endif // dCSP_TIMED_REDRAW
-      )
     )
+    == FALSE
+  )
   {
-    return false;
+    return FALSE;
   }
   else
   {
 // C..... Set the progress bar values
     // Set the progress text type
-    m_nProgressText = i_nProgress;
+    mp_nProgressText = i_nProgress;
 
     // Set range and step
-    m_nLower = 0; // Set first parameters for the resampling
-    ASSERT(i_nUpper > 0); // m_nLower is 0, m_nUpper CANNOT BE BEFORE m_nLower quite now
-    m_nUpper = i_nUpper;
+    mp_nLower = 0; // Set first parameters for the resampling
+
+    ASSERT(i_nUpper > 0); // mp_nLower is 0, mp_nUpper CANNOT BE BEFORE mp_nLower quite now
+    mp_nUpper = i_nUpper;
+
 #ifdef dCSP_SLIDERBAR_METHOD
-    m_nLeft  = 0;
+    mp_nLeft  = 0;
 #endif // dCSP_SLIDERBAR_METHOD
-    m_nRight = 0;
+
+    mp_nRight = 0;
 
     SetRange
-    (
-      0,
-      i_nUpper,
-      1,
-      false
+    ( 0
+    , i_nUpper
+    , 1
+    , FALSE
 #ifndef dCSP_TIMED_REDRAW
-     ,false // Don't resample range, and avoid display there !
+    , FALSE // Don't resample range, and avoid display there !
 #endif // dCSP_TIMED_REDRAW
     );
 
     // Set and save additional values
-    m_oStrMessage = i_poStrMessage;
+    mp_oStrMessage = i_poStrMessage;
 #ifdef dCSP_SLIDERBAR_METHOD
-    m_bReverse    = i_bReverse;
+    mp_bReverse    = i_bReverse;
 #endif // dCSP_SLIDERBAR_METHOD
 
 // D..... Get the creation date and time of the progress bar and set its position to the beginning
     Reset
     (
 #ifndef dCSP_TIMED_REDRAW
-      false
+      FALSE
 #endif // dCSP_TIMED_REDRAW
     );
 
 // E..... Set the refresh timer to 500 milliseconds (or 20ms/50Hz in <dCSP_TIMED_REDRAW> mode)
+    SetTimer
+    ( (UINT) this // Use object's unique address as timer identifier
 #ifndef dCSP_TIMED_REDRAW
-    SetTimer((UINT) this, 500, NULL); // Use object's unique address as timer identifier
+    , 500
 #else
-    SetTimer((UINT) this,  20, NULL); // Use object's unique address as timer identifier
+    , 20
 #endif // dCSP_TIMED_REDRAW
+    , NULL
+    );
 
 // F..... Resize the text and display the whole things
     RefreshPanes(); // Set the text in pane 0 and do the first drawing of the SkinProgress bar
 
-    return true;
+    return TRUE;
   }
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : ProgressInStatusBar                                        */
+/* Name          : _ProgressInStatusBar                                       */
 /* Role          : Create the progress in status bar with basic parameters    */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error during progress bar creation        */
-/*                          true  : Progress bar created                      */
+/*                   BOOL = FALSE : Error during progress bar creation        */
+/*                          TRUE  : Progress bar created                      */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -896,7 +905,7 @@ BOOL CSkinProgress::CreateCommon
 /*                 C - Specific Status Bar initialization                     */
 /*                 D - Create and initialize the progress bar                 */
 /*----------------------------------------------------------------------------*/
-/* PROC ProgressInStatusBar                                                   */
+/* PROC _ProgressInStatusBar                                                  */
 /*                                                                            */
 /* A..... Get status bar handler                                              */
 /* [IF there is a status bar]                                                 */
@@ -908,109 +917,129 @@ BOOL CSkinProgress::CreateCommon
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-BOOL CSkinProgress::ProgressInStatusBar
-( // The initialization routine
-  LPCTSTR     i_poStrMessage,  // Text to display
-  int         i_nUpper,        // = 100,         : Default range from 0 to i_nUpper
-  int         i_nProgress,     // = cSPT_PERCENT : Message type to add to the text
-  int         i_nPane,         // = 0,           : Pane number in which display the progress bar
-  int         i_nSize,         // = 200,         : Size of the progress bar if in pane 0
-  CBitmap*    i_poBitmap       // = NULL         : Pointer to a user bitmap
+BOOL CSkinProgress::_ProgressInStatusBar
+( LPCTSTR  i_poStrMessage // Text to display
+, int      i_nUpper       // = 100,         : Default range from 0 to i_nUpper
+, int      i_nProgress    // = cSPT_PERCENT : Message type to add to the text
+, int      i_nPane        // = 0,           : Pane number in which display the progress bar
+, int      i_nSize        // = 200,         : Size of the progress bar if in pane 0
+, CBitmap* i_poBitmap     // = NULL         : Pointer to a user bitmap
 #ifdef dCSP_SLIDERBAR_METHOD
- ,BOOL        i_bReverse       // = false
+, BOOL     i_bReverse     // = FALSE
 #endif // dCSP_SLIDERBAR_METHOD
 )
-{
-  BOOL        bSuccess;
-  CStatusBar* poStatusBar;
-  DWORD       nStyleEx;
-  DWORD       nStyle;
-  CRect       oRectPane;
+{ // The initialization routine
+  BOOL        l_bSuccess;
+  CStatusBar* l_poStatusBar;
+  DWORD       l_nStyleEx;
+  DWORD       l_nStyle;
+  CRect       l_oRectPane;
 
-  LPCSTR      poStrClass;
-  UINT        nClassStyle;
+  LPCSTR      l_poStrClass;
+  UINT        l_nClassStyle;
 
   // Init
 
-  bSuccess          = false;
+  l_bSuccess = FALSE;
+
 #ifdef dCSP_DIALOG_PROGRESS
-  m_poWndProgress   = NULL;
-  m_poWndMessage    = NULL;
+  mp_poWndProgress = NULL;
+  mp_poWndMessage  = NULL;
 #endif // dCSP_DIALOG_PROGRESS
 
   // Process
 
 // A..... Get status bar handler
-  poStatusBar = GetStatusBar();
-  if(poStatusBar != NULL)
+  l_poStatusBar = _GetStatusBar();
+  if(l_poStatusBar != NULL)
   {
 // B..... Create a CStatic object upon the target status bar pane
     // Set the style for the custom progress bas
-    nClassStyle = 0; // CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
-    nStyleEx   = WS_EX_STATICEDGE;
-    nStyle     = WS_CHILD | WS_VISIBLE | SS_BITMAP | SS_CENTERIMAGE;
+    l_nClassStyle = 0; // CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
+    l_nStyleEx    = WS_EX_STATICEDGE;
+    l_nStyle      = WS_CHILD | WS_VISIBLE | SS_BITMAP | SS_CENTERIMAGE;
 
     // Get CRect coordinates for requested status bar pane
-    poStatusBar->GetItemRect(i_nPane, &oRectPane);
+    l_poStatusBar->GetItemRect
+    ( i_nPane
+    , &l_oRectPane
+    );
 
     // Create the progress bar
-    poStrClass = AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_WAIT));
-    bSuccess   = CStatic::CreateEx(nStyleEx, poStrClass, "", nStyle, oRectPane, poStatusBar, (UINT) this); // Use object's unique address as child window identifier
+    l_poStrClass
+    = AfxRegisterWndClass
+      ( l_nClassStyle
+      , AfxGetApp()->LoadStandardCursor(IDC_WAIT)
+      )
+    ;
+    
+    l_bSuccess
+    = CStatic::CreateEx
+      ( l_nStyleEx
+      , l_poStrClass
+      , ""
+      , l_nStyle
+      , l_oRectPane
+      , l_poStatusBar
+      , (UINT) this // Use object's unique address as child window identifier
+      )
+    ;
 
-    ASSERT(bSuccess);
-    if(!bSuccess)
+    ASSERT(l_bSuccess == TRUE);
+    if(l_bSuccess == FALSE)
     {
-      return false;
+      return FALSE;
     }
     else
     {
 #ifdef dCSP_VERTICAL_BAR
 #ifndef dCSP_DISPLAY_STRETCH
-      m_bVertical = false; // *ALWAYS false IN CSkinProgress while in StatusBar mode*
+      mp_bVertical = FALSE; // *ALWAYS FALSE IN CSkinProgress while in StatusBar mode*
 #else
-      m_bVertical = true;  // *FORCE* vertical for m_poStretchBmp analysis
+      mp_bVertical = TRUE;  // *FORCE* vertical for mp_poStretchBmp analysis
 #endif // dCSP_DISPLAY_STRETCH
 #endif // dCSP_VERTICAL_BAR
 
 // C..... Specific Status Bar initialization
       SetSize
-      (
-        i_nSize
+      ( i_nSize
 #ifndef dCSP_TIMED_REDRAW
-       ,false // Set the size, and avoid display there !
+      , FALSE // Set the size, and avoid display there !
 #endif // dCSP_TIMED_REDRAW
       );
-      m_nPane        = i_nPane;
-      m_oStrPrevText = poStatusBar->GetPaneText(m_nPane); // Get the previous pane's text
+
+      mp_nPane        = i_nPane;
+      mp_oStrPrevText = l_poStatusBar->GetPaneText(mp_nPane); // Get the previous pane's text
      
 // D..... Create and initialize the progress bar
-      bSuccess = CreateCommon
-      (
-        i_poStrMessage,
-        i_nUpper,
-        i_nProgress,
-        i_poBitmap
+      l_bSuccess
+      = _CreateCommon
+        ( i_poStrMessage
+        , i_nUpper
+        , i_nProgress
+        , i_poBitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-       ,i_bReverse
+        , i_bReverse
 #endif // dCSP_SLIDERBAR_METHOD
-      );
+        )
+      ;
 
-      return bSuccess;
+      return l_bSuccess;
     }
   }
   else
   {
-    return false;
+    return FALSE;
   }
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : ProgressInDialog                                           */
+/* Name          : _ProgressInDialog                                          */
 /* Role          : Create the progress bar in a dialog with basic parameters  */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error during progress bar creation        */
-/*                          true  : Progress bar created                      */
+/*                   BOOL = FALSE : Error during progress bar creation        */
+/*                          TRUE  : Progress bar created                      */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -1026,16 +1055,16 @@ BOOL CSkinProgress::ProgressInStatusBar
 /*                 change it...                                               */
 /* Behavior      : A - Get status bar handler                                 */
 /*                 B - Create a CStatic object upon the target pane           */
-/*                 C - Set the <m_bVertical> flag                             */
+/*                 C - Set the <mp_bVertical> flag                            */
 /*                 D - Specific Status Bar initialization                     */
 /*                 E - Create and initialize the progress bar                 */
 /*----------------------------------------------------------------------------*/
-/* PROC ProgressInDialog                                                      */
+/* PROC _ProgressInDialog                                                     */
 /*                                                                            */
 /* A..... Specific Dialog initialization                                      */
 /* B..... Create a CStatic object upon the target CWnd progress bar pane      */
 /* [IF CStatic creation OK]                                                   */
-/* : C..... Set the <m_bVertical> flag if the progress bar pane is vertical   */
+/* : C..... Set the <mp_bVertical> flag if the progress bar pane is vertical  */
 /* : [IF there is a CWnd anchor for a text pane to create]                    */
 /* : : D..... Specific Status Bar initialization                              */
 /* : [ENDIF]                                                                  */
@@ -1052,104 +1081,115 @@ BOOL CSkinProgress::ProgressInStatusBar
 /* your own code according to your needs (as long as you include the .h) !    */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 #ifdef dCSP_DIALOG_PROGRESS
-BOOL CSkinProgress::ProgressInDialog
-( // The initialization routine
-  CWnd*       i_poWndProgress,
-  int         i_nUpper,        // = 100,      : Default range from 0 to i_nUpper
-  CBitmap*    i_poBitmap,      // = NULL      : Pointer to a user bitmap
+BOOL CSkinProgress::_ProgressInDialog
+( CWnd*    i_poWndProgress
+, int      i_nUpper        // = 100,      : Default range from 0 to i_nUpper
+, CBitmap* i_poBitmap      // = NULL      : Pointer to a user bitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-  BOOL        i_bReverse,      // = false
+, BOOL     i_bReverse      // = FALSE
 #endif // dCSP_SLIDERBAR_METHOD
-  CWnd*       i_poWndMessage,  // = NULL
-  LPCTSTR     i_poStrMessage,  // = NULL      : Text to display
-  int         i_nProgress      // = cSPT_NONE : Message type to add to the text
+, CWnd*    i_poWndMessage  // = NULL
+, LPCTSTR  i_poStrMessage  // = NULL      : Text to display
+, int      i_nProgress     // = cSPT_NONE : Message type to add to the text
 )
-{
-  BOOL        bSuccess;
-  DWORD       nStyleEx;
-  DWORD       nStyle;
-  CRect       oRectPane;
+{ // The initialization routine
+  BOOL     l_bSuccess;
+  DWORD    l_nStyleEx;
+  DWORD    l_nStyle;
+  CRect    l_oRectPane;
 
-  LPCSTR      poStrClass;
-  UINT        nClassStyle;
+  LPCSTR   l_poStrClass;
+  UINT     l_nClassStyle;
 
   // Init
 
-  bSuccess        = false;
+  l_bSuccess = FALSE;
 
 // A..... Specific Dialog initialization
-  m_poWndProgress = i_poWndProgress;
-  m_poWndMessage  = i_poWndMessage;
+  mp_poWndProgress = i_poWndProgress;
+  mp_poWndMessage  = i_poWndMessage;
 
   // Process + Return
 
 // B..... Create a CStatic object upon the target CWnd progress bar pane
   // Set the style for the custom progress bas
-  nClassStyle = 0; // CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
-  nStyleEx    = WS_EX_STATICEDGE;
-  nStyle      = WS_CHILD | WS_VISIBLE | SS_BITMAP | SS_CENTERIMAGE;
+  l_nClassStyle = 0; // CS_CLASSDC | CS_HREDRAW | CS_VREDRAW;
+  l_nStyleEx    = WS_EX_STATICEDGE;
+  l_nStyle      = WS_CHILD | WS_VISIBLE | SS_BITMAP | SS_CENTERIMAGE;
 
   // Get CRect coordinates for requested target CWnd bar pane
-  GetTargetRect(&oRectPane);
+  _GetTargetRect(&l_oRectPane);
 
   // Create the progress bar
-  poStrClass = AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_WAIT));
-  bSuccess   = CStatic::CreateEx
-  (
-    nStyleEx,
-    poStrClass,
-    "",
-    nStyle,
-    oRectPane,
-    m_poWndProgress->GetParent(), // Attach it not the the CWnd anchor (thus getting in its client area) but to its parent to overlap it
-    (UINT) this // Use object's unique address as child window identifier
-  );
+  l_poStrClass
+  = AfxRegisterWndClass
+    ( l_nClassStyle
+    , AfxGetApp()->LoadStandardCursor(IDC_WAIT)
+    )
+  ;
+  
+  l_bSuccess
+  = CStatic::CreateEx
+    ( l_nStyleEx
+    , l_poStrClass
+    , ""
+    , l_nStyle
+    , l_oRectPane
+    , mp_poWndProgress->GetParent() // Attach it not the the CWnd anchor (thus getting in its client area) but to its parent to overlap it
+    , (UINT) this // Use object's unique address as child window identifier
+    )
+  ;
 
-  ASSERT(bSuccess);
-  if(!bSuccess)
+  ASSERT(l_bSuccess == TRUE);
+  if(l_bSuccess == FALSE)
   {
-    return false;
+    return FALSE;
   }
   else
   {
-// C..... Set the <m_bVertical> flag if the progress bar pane is vertical
+// C..... Set the <mp_bVertical> flag if the progress bar pane is vertical
 #ifdef dCSP_VERTICAL_BAR
 #ifndef dCSP_DISPLAY_STRETCH
-    if(oRectPane.Height() > oRectPane.Width())
+    if
+    (
+        l_oRectPane.Height()
+      > l_oRectPane.Width()
+    )
     { // VERTICAL
-      m_bVertical = true;
+      mp_bVertical = TRUE;
     }
     else
     {
-      m_bVertical = false;
+      mp_bVertical = FALSE;
     }
 #else
-    m_bVertical = true;  // *FORCE* vertical for <m_poStretchBmp> analysis
+    mp_bVertical = TRUE;  // *FORCE* vertical for <mp_poStretchBmp> analysis
 #endif // dCSP_DISPLAY_STRETCH
 #endif // dCSP_VERTICAL_BAR
 
-    if(m_poWndMessage != NULL)
+    if(mp_poWndMessage != NULL)
     {
 // D..... Specific Status Bar initialization
-      m_poWndMessage->GetWindowText(m_oStrPrevText); // Get the previous pane's text
+      mp_poWndMessage->GetWindowText(mp_oStrPrevText); // Get the previous pane's text
     }else{}
 
-    if(bSuccess)
+    if(l_bSuccess == TRUE)
     {
 // E..... Create and initialize the progress bar
-      bSuccess = CreateCommon
-      (
-        i_poStrMessage,
-        i_nUpper,
-        i_nProgress,
-        i_poBitmap
+      l_bSuccess
+      = _CreateCommon
+        ( i_poStrMessage
+        , i_nUpper
+        , i_nProgress
+        , i_poBitmap
 #ifdef dCSP_SLIDERBAR_METHOD
-       ,i_bReverse
+        , i_bReverse
 #endif // dCSP_SLIDERBAR_METHOD
-      );
+        )
+      ;
     }else{}
 
-    return bSuccess;
+    return l_bSuccess;
   }
 }
 #endif // dCSP_DIALOG_PROGRESS
@@ -1168,7 +1208,7 @@ BOOL CSkinProgress::ProgressInDialog
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Clear the progress bar                                 */
+/* Behavior      : A - _Clear the progress bar                                */
 /*                 B - Delete the refresh timer                               */
 /*                 C - Delete the base bitmap                                 */
 /*                 C - Delete the client DC compatible base bitmap            */
@@ -1177,25 +1217,25 @@ BOOL CSkinProgress::ProgressInDialog
 /*----------------------------------------------------------------------------*/
 /* PROC ~CSkinProgress                                                        */
 /*                                                                            */
-/* A..... Clear the progress bar                                              */
+/* A..... _Clear the progress bar                                             */
 /* B..... Delete the refresh timer                                            */
-/* C..... Delete the <m_poBaseBmp> base bitmap                                */
-/* D..... Delete the <m_poCompatibleBmp> client DC compatible base bitmap     */
-/* E..... Delete the <m_poStretchBmp> stretched for image list bitmap         */
-/* F..... Delete the <m_poProgressBmp> displayed progress bar bitmap          */
+/* C..... Delete the <mp_poBaseBmp> base bitmap                               */
+/* D..... Delete the <mp_poCompatibleBmp> client DC compatible base bitmap    */
+/* E..... Delete the <mp_poStretchBmp> stretched for image list bitmap        */
+/* F..... Delete the <mp_poProgressBmp> displayed progress bar bitmap         */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 CSkinProgress::~CSkinProgress
-( // Destructor
+(
 )
-{
+{ // Destructor
 
   // Init
 
   // Process
 
-// A..... Clear the progress bar
-  Clear();
+// A..... _Clear the progress bar
+  _Clear();
 
 // B..... Delete the refresh timer
   if(IsWindow(this->m_hWnd)) // Test first if <this> is the correct address of the object before using it as the right timer identifier
@@ -1203,35 +1243,35 @@ CSkinProgress::~CSkinProgress
     KillTimer((UINT) this); // Use object's unique address as timer identifier
   }else{}
 
-// C..... Delete the <m_poBaseBmp> base bitmap
-  if(m_poBaseBmp != NULL)
+// C..... Delete the <mp_poBaseBmp> base bitmap
+  if(mp_poBaseBmp != NULL)
   { // Delete the attached base bitmap
-    delete m_poBaseBmp;
+    delete mp_poBaseBmp;
   }else{}
 
-// D..... Delete the <m_poCompatibleBmp> client DC compatible base bitmap
-  if(m_poCompatibleBmp != NULL)
+// D..... Delete the <mp_poCompatibleBmp> client DC compatible base bitmap
+  if(mp_poCompatibleBmp != NULL)
   { // Delete the attached client DC compatible base bitmap
-    delete m_poCompatibleBmp;
+    delete mp_poCompatibleBmp;
   }else{}
 
-// E..... Delete the <m_poStretchBmp> stretched for image list bitmap
-  if(m_poStretchBmp != NULL)
+// E..... Delete the <mp_poStretchBmp> stretched for image list bitmap
+  if(mp_poStretchBmp != NULL)
   { // Delete the attached stretched image list bitmap
-    delete m_poStretchBmp;
+    delete mp_poStretchBmp;
   }else{}
 
-// F..... Delete the <m_poProgressBmp> displayed progress bar bitmap
-  if(m_poProgressBmp != NULL)
+// F..... Delete the <mp_poProgressBmp> displayed progress bar bitmap
+  if(mp_poProgressBmp != NULL)
   { // Delete the attached progress bitmap
-    delete m_poProgressBmp;
+    delete mp_poProgressBmp;
   }else{}
 }
 
 // *** CLEANER ***
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : Clear                                                      */
+/* Name          : _Clear                                                     */
 /* Role          : Erase the progress                                         */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
@@ -1248,7 +1288,7 @@ CSkinProgress::~CSkinProgress
 /*                 D - Display the changes                                    */
 /*                 E - Set previous message                                   */
 /*----------------------------------------------------------------------------*/
-/* PROC Clear                                                                 */
+/* PROC _Clear                                                                */
 /*                                                                            */
 /* [IF the object is still alive]                                             */
 /* : A..... Delete the progress bar                                           */
@@ -1264,51 +1304,51 @@ CSkinProgress::~CSkinProgress
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-void CSkinProgress::Clear
-( // Deletion of the progress bar, restoration of the context
+void CSkinProgress::_Clear
+(
 )
-{
-  CStatusBar* poStatusBar;
+{ // Deletion of the progress bar, restoration of the context
+  CStatusBar* l_poStatusBar;
 
   //
 
   if(IsWindow(GetSafeHwnd()))
   {
 // A..... Delete the progress bar
-    ModifyStyle(WS_VISIBLE, 0); // Clear the attached CStatic progress bar
+    ModifyStyle(WS_VISIBLE, 0); // _Clear the attached CStatic progress bar
     DestroyWindow(); // Destroy it
 
 #ifdef dCSP_DIALOG_PROGRESS
-    if(m_poWndProgress == NULL)
+    if(mp_poWndProgress == NULL)
     { // If in Status Bar, reset pane 0 and delete the progress bar
 #endif // dCSP_DIALOG_PROGRESS
-      poStatusBar = GetStatusBar();
-      if(poStatusBar != NULL)
+      l_poStatusBar = _GetStatusBar();
+      if(l_poStatusBar != NULL)
       {
 // B..... Set IDLE message in pane 0
-        m_oStrMessage.LoadString(AFX_IDS_IDLEMESSAGE); // Get the IDLE_MESSAGE and place ît in the status bar 
-        poStatusBar->SetPaneText(0, m_oStrMessage);
+        mp_oStrMessage.LoadString(AFX_IDS_IDLEMESSAGE); // Get the IDLE_MESSAGE and place ît in the status bar 
+        l_poStatusBar->SetPaneText(0, mp_oStrMessage);
 
 // C..... Set previous message in user pane
-        if(m_nPane != 0)
+        if(mp_nPane != 0)
         { // If not the text pane, restore previous text in the pane
-          poStatusBar->SetPaneText(m_nPane, m_oStrPrevText);
+          l_poStatusBar->SetPaneText(mp_nPane, mp_oStrPrevText);
         }else{}
 
 // D..... Display the changes
-        poStatusBar->InvalidateRect(NULL);
+        l_poStatusBar->InvalidateRect(NULL);
       }else{}
 #ifdef dCSP_DIALOG_PROGRESS
     }
     else
     {
-      if(m_poWndMessage != NULL)
+      if(mp_poWndMessage != NULL)
       {
 // E..... Set previous message
-        m_poWndMessage->SetWindowText(m_oStrPrevText); // Set the previous pane's text
+        mp_poWndMessage->SetWindowText(mp_oStrPrevText); // Set the previous pane's text
       }else{}
 
-      m_poWndProgress->InvalidateRect(NULL);
+      mp_poWndProgress->InvalidateRect(NULL);
     } // NOTHING TO RESET IN DIALOG MODE !!!
 #endif // dCSP_DIALOG_PROGRESS
   }else{}
@@ -1317,7 +1357,7 @@ void CSkinProgress::Clear
 // *** SYSTEM INTERFACE ***
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : GetStatusBar                                               */
+/* Name          : _GetStatusBar                                              */
 /* Role          : Get status bar's window handle                             */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
@@ -1331,7 +1371,7 @@ void CSkinProgress::Clear
 /* Behavior      : A - Get the main window handle                             */
 /*                 B - Retrieve the status bar handle                         */
 /*----------------------------------------------------------------------------*/
-/* PROC GetStatusBar                                                          */
+/* PROC _GetStatusBar                                                         */
 /*                                                                            */
 /* A..... Get the main window handle                                          */
 /* B..... Retrieve the status bar handle                                      */
@@ -1342,34 +1382,34 @@ void CSkinProgress::Clear
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-CStatusBar* CSkinProgress::GetStatusBar
-( // Get the pointer on the current status bar
+CStatusBar* CSkinProgress::_GetStatusBar
+(
 )
-{
-  CWnd* poMainWnd;
-  CWnd* poMessageBar;
+{ // Get the pointer on the current status bar
+  CWnd* l_poMainWnd;
+  CWnd* l_poMessageBar;
 
   // Init
 
 // A..... Get the main window handle
-  poMainWnd = AfxGetMainWnd();
+  l_poMainWnd = AfxGetMainWnd();
 
   // Process + Return
 
 // B..... Retrieve the status bar handle
-  if(poMainWnd != NULL)
+  if(l_poMainWnd != NULL)
   {
-    if(poMainWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
+    if(l_poMainWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
     { // If main window is a frame window, use normal methods
-      poMessageBar = ((CFrameWnd*) poMainWnd)->GetMessageBar();
+      l_poMessageBar = ((CFrameWnd*) l_poMainWnd)->GetMessageBar();
       
 // BA.... Return status bar's handle from CFrameWnd main window type
-      return DYNAMIC_DOWNCAST(CStatusBar, poMessageBar);
+      return DYNAMIC_DOWNCAST(CStatusBar, l_poMessageBar);
     }
     else
     { // otherwise traverse children to try and find the status bar
 // BB.... Return status bar's handle from other main window type
-      return DYNAMIC_DOWNCAST(CStatusBar, poMainWnd->GetDescendantWindow(AFX_IDW_STATUS_BAR));
+      return DYNAMIC_DOWNCAST(CStatusBar, l_poMainWnd->GetDescendantWindow(AFX_IDW_STATUS_BAR));
     }
   }
   else
@@ -1379,12 +1419,12 @@ CStatusBar* CSkinProgress::GetStatusBar
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : GetTargetRect                                              */
+/* Name          : _GetTargetRect                                             */
 /* Role          : Get the target CRect of the progress bar                   */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error in getting the target rect          */
-/*                          true  : CRect returned is valid                   */
+/*                   BOOL = FALSE : Error in getting the target rect          */
+/*                          TRUE  : CRect returned is valid                   */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   o_poProgressRect : Pointer on an existing CRect          */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -1394,7 +1434,7 @@ CStatusBar* CSkinProgress::GetStatusBar
 /* Behavior      : A - Get the progress bar's CWnd anchor rectangle           */
 /*                 B - Get the status bar selected pane rectangle             */
 /*----------------------------------------------------------------------------*/
-/* PROC GetTargetRect                                                         */
+/* PROC _GetTargetRect                                                        */
 /*                                                                            */
 /* [IF there is a progress bar CWnd anchor specified]                         */
 /* : A..... Get the progress bar's CWnd anchor rectangle                      */
@@ -1403,40 +1443,39 @@ CStatusBar* CSkinProgress::GetStatusBar
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-BOOL CSkinProgress::GetTargetRect
-( // Get the target CRect for the [SetBitmap(...)]
-  CRect* o_poProgressRect // Pointer on an existing CRect
+BOOL CSkinProgress::_GetTargetRect
+( CRect* o_poProgressRect // Pointer on an existing CRect
 )
-{
-  CStatusBar* poStatusBar;
+{ // Get the target CRect for the [SetBitmap(...)]
+  CStatusBar* l_poStatusBar;
 
   // Init
 
   // Process + Return
 
 #ifdef dCSP_DIALOG_PROGRESS
-  if(m_poWndProgress != NULL)
+  if(mp_poWndProgress != NULL)
   { // If dialog mode
 // A..... Get the progress bar's CWnd anchor rectangle
-    m_poWndProgress->GetWindowRect(o_poProgressRect); // Return CWnd parent's screen absolute coordinates 
-    m_poWndProgress->GetParent()->ScreenToClient(o_poProgressRect); // Transform into parent relative coordinates
+    mp_poWndProgress->GetWindowRect(o_poProgressRect); // Return CWnd parent's screen absolute coordinates 
+    mp_poWndProgress->GetParent()->ScreenToClient(o_poProgressRect); // Transform into parent relative coordinates
 
-    return true;
+    return TRUE;
   }
   else
   {
 #endif // dCSP_DIALOG_PROGRESS
-    poStatusBar = GetStatusBar();
-    if(poStatusBar != NULL)
+    l_poStatusBar = _GetStatusBar();
+    if(l_poStatusBar != NULL)
     {
 // B..... Get the status sar selected pane rectangle
-      poStatusBar->GetItemRect(m_nPane, o_poProgressRect); // Already working in parent (the status bar) relative coordinates
+      l_poStatusBar->GetItemRect(mp_nPane, o_poProgressRect); // Already working in parent (the status bar) relative coordinates
 
-      return true;
+      return TRUE;
     }
     else
     {
-      return false;
+      return FALSE;
     }
 #ifdef dCSP_DIALOG_PROGRESS
   }
@@ -1450,8 +1489,8 @@ BOOL CSkinProgress::GetTargetRect
 /* Role          : Create an image list for the progress bar painting         */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error in image list creation              */
-/*                          true  : Image list created and ready to use       */
+/*                   BOOL = FALSE : Error in image list creation              */
+/*                          TRUE  : Image list created and ready to use       */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -1468,16 +1507,16 @@ BOOL CSkinProgress::GetTargetRect
 /*----------------------------------------------------------------------------*/
 /* PROC SetBitmap                                                             */
 /*                                                                            */
-/* A..... Get the base bitmap for the <m_oBarImgLst> image list creation      */
+/* A..... Get the base bitmap for the <mp_oBarImgLst> image list creation     */
 /*   AA.... Create the base and the device compatible bitmaps                 */
 /*   AB.... Load the <i_poBitmap> base bitmap                                 */
-/*   AC.... Convert the <m_poBaseBmp> base bitmap in a compatible format      */
+/*   AC.... Convert the <mp_poBaseBmp> base bitmap in a compatible format     */
 /* B..... Create the stretched bitmap used for the image list creation        */
 /*   BA.... Create the bitmap, and delete the previous one if there was one   */
 /*   BB.... Create a bitmap with mixed dimensions from the base and the pane  */
 /*   BC.... Set the copy parameters for the stretching                        */
 /* C..... Modify the base bitmap to create an image list compatible bitmap    */
-/* D..... Create the <m_oBarImgLst> image list                                */
+/* D..... Create the <mp_oBarImgLst> image list                               */
 /*   DA.... Get the stretched bitmap size                                     */
 /*   DB.... Calculate the size of every element of the image list             */
 /*   DC.... Delete the previous image list the create a new one from scratch  */
@@ -1487,294 +1526,394 @@ BOOL CSkinProgress::GetTargetRect
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::SetBitmap
-( // Change of progress bar image
-  CBitmap* i_poBitmap  // = NULL : Pointer to an existing bitmap
+( CBitmap* i_poBitmap  // = NULL : Pointer to an existing bitmap
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL     i_bDisplay  // = true : Display the changes
+, BOOL     i_bDisplay  // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{ 
-  BITMAP      sBmpSrc;
+{ // Change of progress bar image
+  BITMAP    l_sBmpSrc;
+  CBitmap*  l_poOldBitmap;
+  CBitmap*  l_poOldStretch;
+  CRect     l_oRectBar;
+  CDC       l_oDcBitmap;
+  CDC       l_oDcStretch;
+
 #ifdef dCSP_VERTICAL_BAR
-  CBitmap     oBmpVertical;
+  CBitmap   l_oBmpVertical;
+  CBitmap*  l_poOldVertical;
+  CDC       l_oDcVertical;
 #endif // dCSP_VERTICAL_BAR
-  CBitmap*    poOldBitmap;
-#ifdef dCSP_VERTICAL_BAR
-  CBitmap*    poOldVertical;
-#endif // dCSP_VERTICAL_BAR
-  CBitmap*    poOldStretch;
-  CRect       oRectBar;
-  CDC         oDcBitmap;
-#ifdef dCSP_VERTICAL_BAR
-  CDC         oDcVertical;
-#endif // dCSP_VERTICAL_BAR
-  CDC         oDcStretch;
 
   // Init
 
-  m_oRectPaint.SetRect(0, 0, 0, 0); // Force redraw if the bitmap is changed while the SkinProgress object exist
+  // Force redraw if the bitmap is changed while the SkinProgress object exist
+  mp_oRectPaint.SetRect
+  ( 0
+  , 0
+  , 0
+  , 0
+  );
+
 #ifdef dCSP_VERTICAL_BAR
-  poOldVertical = NULL; // AVOID /W4 -> BC.... *STUPID COMPILER*
+  l_poOldVertical = NULL; // AVOID /W4 -> BC.... *STUPID COMPILER*
 #endif // dCSP_VERTICAL_BAR
 
   // Process
 
-  if(GetTargetRect(&oRectBar))
+  if(_GetTargetRect(&l_oRectBar))
   { // If the target rectangle is valid
-    CClientDC oDC(this); // Get the current DC
+    CClientDC l_oDC(this); // Get the current DC
 
-// A..... Get the <i_poBitmap> base bitmap for the <m_oBarImgLst> image list creation
+// A..... Get the <i_poBitmap> base bitmap for the <mp_oBarImgLst> image list creation
 // AA.... Create the base and the device compatible bitmaps
-    if(m_poBaseBmp != NULL)
-    { // *IF* m_poBaseBmp already exist
-      delete m_poBaseBmp;
+    if(mp_poBaseBmp != NULL)
+    { // *IF* mp_poBaseBmp already exist
+      delete mp_poBaseBmp;
     }else{}
-    m_poBaseBmp = new CBitmap; // BEWARE : DON'T INITIALIZE IT YET !
 
-    if(m_poCompatibleBmp != NULL)
-    { // *IF* m_poCompatibleBmp already exist
-      delete m_poCompatibleBmp;
+    mp_poBaseBmp = new CBitmap; // BEWARE : DON'T INITIALIZE IT YET !
+
+    if(mp_poCompatibleBmp != NULL)
+    { // *IF* mp_poCompatibleBmp already exist
+      delete mp_poCompatibleBmp;
     }else{}
-    m_poCompatibleBmp = new CBitmap; // BEWARE : DON'T INITIALIZE IT YET !
+
+    mp_poCompatibleBmp = new CBitmap; // BEWARE : DON'T INITIALIZE IT YET !
 
 // AB.... Load the <i_poBitmap> base bitmap
     // Check if i_poBitmap is valid, otherwise use the resource's bitmap
     if(i_poBitmap == NULL)
     { // If no bitmap provided, takes the default bitmap
 #ifndef dCSP_RESOURCE_BITMAP
-      m_poBaseBmp->CreateBitmapIndirect(&sAQUA_BITMAP);
+      mp_poBaseBmp->CreateBitmapIndirect(&sAQUA_BITMAP);
 #else
-      m_poBaseBmp->LoadBitmap(IDB_AQUABAR); // Defaut bitmap, might have to be changed !
+      mp_poBaseBmp->LoadBitmap(IDB_AQUABAR); // Defaut bitmap, might have to be changed !
 #endif // dCSP_RESOURCE_BITMAP
     }
     else
-    { // Copy the <i_poBitmap> input bitmap as the new <m_poBaseBmp> base bitmap
-      CopyBitmap(m_poBaseBmp, i_poBitmap);
+    { // Copy the <i_poBitmap> input bitmap as the new <mp_poBaseBmp> base bitmap
+      CopyBitmap(mp_poBaseBmp, i_poBitmap);
     }
 
-// AC.... Convert the <m_poBaseBmp> base bitmap in a device compatible format
-    ConvBitmap(m_poCompatibleBmp, m_poBaseBmp, &oDC);
+// AC.... Convert the <mp_poBaseBmp> base bitmap in a device compatible format
+    ConvBitmap(mp_poCompatibleBmp, mp_poBaseBmp, &l_oDC);
 
     // Get bitmap width and height for the image list creation
-    m_poCompatibleBmp->GetBitmap(&sBmpSrc);
-    m_nBmpWidth  = sBmpSrc.bmWidth / cSPB_EnumElements; // cSPB_EnumElements == 9, the bitmap is actually composed of 9 parts
-    m_nBmpHeight = sBmpSrc.bmHeight;
+    mp_poCompatibleBmp->GetBitmap(&l_sBmpSrc);
 
-// B..... Create the <m_poStretchBmp> stretched bitmap used for the <m_oBarImgLst> image list creation
+    mp_nBmpWidth  = l_sBmpSrc.bmWidth / cSPB_EnumElements; // cSPB_EnumElements == 9, the bitmap is actually composed of 9 parts
+    mp_nBmpHeight = l_sBmpSrc.bmHeight;
+
+// B..... Create the <mp_poStretchBmp> stretched bitmap used for the <mp_oBarImgLst> image list creation
 // BA.... Create the bitmap, and if a previous one was already existing, delete it first
-    if(m_poStretchBmp != NULL)
-    { // *IF* m_poStretchBmp already exist
-      delete m_poStretchBmp;
+    if(mp_poStretchBmp != NULL)
+    { // *IF* mp_poStretchBmp already exist
+      delete mp_poStretchBmp;
     }else{}
-    m_poStretchBmp = new CBitmap;
+
+    mp_poStretchBmp = new CBitmap;
 
 // BB.... Create a bitmap with the base bitmap width, and the despination pane height minus 2
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-#ifndef dCSP_CREATE_BITMAP_FILE
-      m_poStretchBmp->CreateCompatibleBitmap(&oDC, sBmpSrc.bmWidth, oRectBar.Height() - 2); // Minus 2, with don't count the contour of the box
+    if(mp_bVertical == TRUE)
+    { // Vertical bar
+      l_oBmpVertical.CreateCompatibleBitmap
+      ( &l_oDC
+      , l_sBmpSrc.bmWidth
+#ifndef dCSP_DISPLAY_STRETCH
+      , l_oRectBar.Width()  - 2 // Minus 2, with don't count the contour of the box
 #else
-      m_poStretchBmp->CreateCompatibleBitmap(&oDC, sBmpSrc.bmWidth, sBmpSrc.bmHeight); // BITMAP CREATION IN CURRENT VIDEO MODE !
-#endif //dCSP_CREATE_BITMAP_FILE
-#ifdef dCSP_VERTICAL_BAR
+      , l_oRectBar.Height() - 2 // Minus 2, with don't count the contour of the box
+#endif //dCSP_DISPLAY_STRETCH
+      );
+
+      mp_poStretchBmp->CreateCompatibleBitmap
+      ( &l_oDC
+#ifndef dCSP_DISPLAY_STRETCH
+      , (l_oRectBar.Width()  - 2) * cSPB_EnumElements // Minus 2, with don't count the contour of the box
+#else
+      , (l_oRectBar.Height() - 2) * cSPB_EnumElements // Minus 2, with don't count the contour of the box
+#endif //dCSP_DISPLAY_STRETCH
+      , mp_nBmpWidth
+      );
     }
     else
-    { // Vertical bar
-#ifndef dCSP_DISPLAY_STRETCH
-      oBmpVertical.CreateCompatibleBitmap(&oDC, sBmpSrc.bmWidth, oRectBar.Width() - 2); // Minus 2, with don't count the contour of the box
-      m_poStretchBmp->CreateCompatibleBitmap(&oDC, (oRectBar.Width() - 2) * cSPB_EnumElements, m_nBmpWidth); // Minus 2, with don't count the contour of the box
-#else
-      oBmpVertical.CreateCompatibleBitmap(&oDC, sBmpSrc.bmWidth, oRectBar.Height() - 2); // Minus 2, with don't count the contour of the box
-      m_poStretchBmp->CreateCompatibleBitmap(&oDC, (oRectBar.Height() - 2) * cSPB_EnumElements, m_nBmpWidth); // Minus 2, with don't count the contour of the box
-#endif //dCSP_DISPLAY_STRETCH
-    }
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+      mp_poStretchBmp->CreateCompatibleBitmap
+      ( &l_oDC // BITMAP CREATION IN CURRENT VIDEO MODE !
+      , l_sBmpSrc.bmWidth
+#ifndef dCSP_CREATE_BITMAP_FILE
+      , l_oRectBar.Height() - 2 // Minus 2, with don't count the contour of the box
+#else
+      , l_sBmpSrc.bmHeight
+#endif //dCSP_CREATE_BITMAP_FILE
+      );
+    }
    
 // BC.... Set the copy parameters for the stretching
     // Set the DC
-    oDcBitmap.CreateCompatibleDC(&oDC);
-	  poOldBitmap  = oDcBitmap.SelectObject(m_poCompatibleBmp); // Source
-    oDcStretch.CreateCompatibleDC(&oDC);
-	  poOldStretch = oDcStretch.SelectObject(m_poStretchBmp); // Destination
+    l_oDcBitmap.CreateCompatibleDC(&l_oDC);
+	  l_poOldBitmap  = l_oDcBitmap.SelectObject(mp_poCompatibleBmp); // Source
+
+    l_oDcStretch.CreateCompatibleDC(&l_oDC);
+	  l_poOldStretch = l_oDcStretch.SelectObject(mp_poStretchBmp); // Destination
+
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical != false)
+    if(mp_bVertical == TRUE)
     { // Vertical bar
-      oDcVertical.CreateCompatibleDC(&oDC);
-	    poOldVertical = oDcVertical.SelectObject(&oBmpVertical); // Destination
-      oDcVertical.SetStretchBltMode(HALFTONE);
+      l_oDcVertical.CreateCompatibleDC(&l_oDC);
+	    l_poOldVertical = l_oDcVertical.SelectObject(&l_oBmpVertical); // Destination
+      l_oDcVertical.SetStretchBltMode(HALFTONE);
     }
     else
+#endif // dCSP_VERTICAL_BAR
     { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-      oDcStretch.SetStretchBltMode(HALFTONE);
-#ifdef dCSP_VERTICAL_BAR
+      l_oDcStretch.SetStretchBltMode(HALFTONE);
     }
-#endif // dCSP_VERTICAL_BAR
 
-// C..... Copy the <m_poCompatibleBmp> base bitmap and apply modifications to create an image list compatible bitmap
+// C..... Copy the <mp_poCompatibleBmp> base bitmap and apply modifications to create an image list compatible bitmap
     // Copy the picture
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-#ifndef dCSP_CREATE_BITMAP_FILE
-      oDcStretch.StretchBlt(0, 0, sBmpSrc.bmWidth, oRectBar.Height() - 2, &oDcBitmap, 0, 0, sBmpSrc.bmWidth, sBmpSrc.bmHeight, SRCCOPY);
-#else
-      oDcStretch.BitBlt(0, 0, sBmpSrc.bmWidth, sBmpSrc.bmHeight, &oDcBitmap, 0, 0, SRCCOPY); // BITMAP CREATION IN CURRENT VIDEO MODE, PLEASE USE 32 BITS, AVOID MAPPED !
-#endif //dCSP_CREATE_BITMAP_FILE
-#ifdef dCSP_VERTICAL_BAR
-    }
-    else
+    if(mp_bVertical == TRUE)
     { // Vertical bar
+      l_oDcVertical.StretchBlt
+      ( 0
+      , 0
+      , l_sBmpSrc.bmWidth
 #ifndef dCSP_DISPLAY_STRETCH
-      oDcVertical.StretchBlt(0, 0, sBmpSrc.bmWidth, oRectBar.Width()  - 2, &oDcBitmap, 0, 0, sBmpSrc.bmWidth, sBmpSrc.bmHeight, SRCCOPY);
+      , l_oRectBar.Width()  - 2
 #else
-      oDcVertical.StretchBlt(0, 0, sBmpSrc.bmWidth, oRectBar.Height() - 2, &oDcBitmap, 0, 0, sBmpSrc.bmWidth, sBmpSrc.bmHeight, SRCCOPY);
+      , l_oRectBar.Height() - 2
 #endif // dCSP_DISPLAY_STRETCH
+      , &l_oDcBitmap
+      , 0
+      , 0
+      , l_sBmpSrc.bmWidth
+      , l_sBmpSrc.bmHeight
+      , SRCCOPY
+      );
 
-      // Copy the stretched vertical picture into the m_poStretchBmp with part flip
+      // Copy the stretched vertical picture into the mp_poStretchBmp with part flip
+      for
+      ( int y = 0
 #ifndef dCSP_DISPLAY_STRETCH
-      for(int y = 0; y < oRectBar.Width() - 2; y += 1)
+      ; y < l_oRectBar.Width()  - 2
 #else
-      for(int y = 0; y < oRectBar.Height() - 2; y += 1)
+      ; y < l_oRectBar.Height() - 2
 #endif // dCSP_DISPLAY_STRETCH
+      ; y += 1
+      )
       { // Scan each line
-        for(int x = 0; x < sBmpSrc.bmWidth; x += 1)
+        for
+        ( int x = 0
+        ; x < l_sBmpSrc.bmWidth
+        ; x += 1
+        )
         { // Scan every pixel of the line
+          l_oDcStretch.SetPixel
+          (   y
+            + (
+                  (
 #ifndef dCSP_DISPLAY_STRETCH
-          oDcStretch.SetPixel(y + ((oRectBar.Width()  - 2) * (x / m_nBmpWidth)), x % m_nBmpWidth, oDcVertical.GetPixel(x, y));
+                      l_oRectBar.Width()
 #else
-          oDcStretch.SetPixel(y + ((oRectBar.Height() - 2) * (x / m_nBmpWidth)), x % m_nBmpWidth, oDcVertical.GetPixel(x, y));
+                      l_oRectBar.Height()
 #endif // dCSP_DISPLAY_STRETCH
+                    - 2
+                  )
+                * (
+                      x
+                    / mp_nBmpWidth
+                  )
+              )
+          , x % mp_nBmpWidth
+          , l_oDcVertical.GetPixel(x, y)
+          );
         }
       }
     }
+    else
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+#ifndef dCSP_CREATE_BITMAP_FILE
+      l_oDcStretch.StretchBlt
+      ( 0
+      , 0
+      , l_sBmpSrc.bmWidth
+      , l_oRectBar.Height() - 2
+      , &l_oDcBitmap
+      , 0
+      , 0
+      , l_sBmpSrc.bmWidth
+      , l_sBmpSrc.bmHeight
+      , SRCCOPY
+      );
+#else
+      l_oDcStretch.BitBlt
+      ( 0
+      , 0
+      , l_sBmpSrc.bmWidth
+      , l_sBmpSrc.bmHeight
+      , &l_oDcBitmap
+      , 0
+      , 0
+      , SRCCOPY
+      ); // BITMAP CREATION IN CURRENT VIDEO MODE, PLEASE USE 32 BITS, AVOID MAPPED !
+#endif //dCSP_CREATE_BITMAP_FILE
+    }
 
     // Release the DC
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical != false)
+    if(mp_bVertical != FALSE)
     { // Vertical bar
-	    oDcVertical.SelectObject(poOldVertical);
-      oDcVertical.DeleteDC();
+	    l_oDcVertical.SelectObject(l_poOldVertical);
+      l_oDcVertical.DeleteDC();
     }else{}
 #endif // dCSP_VERTICAL_BAR
-    oDcStretch.SelectObject(poOldStretch);
-    oDcStretch.DeleteDC();
-    oDcBitmap.SelectObject(poOldBitmap);
-    oDcBitmap.DeleteDC();
 
-// D..... Create the <m_oBarImgLst> image list
+    l_oDcStretch.SelectObject(l_poOldStretch);
+    l_oDcStretch.DeleteDC();
+
+    l_oDcBitmap.SelectObject(l_poOldBitmap);
+    l_oDcBitmap.DeleteDC();
+
+// D..... Create the <mp_oBarImgLst> image list
 // DA.... Get the stretched bitmap size
     // Get bitmap width and height for the image list creation
-    m_poStretchBmp->GetBitmap(&sBmpSrc);
+    mp_poStretchBmp->GetBitmap(&l_sBmpSrc);
 
 #ifdef dCSP_CREATE_BITMAP_FILE
     // Fast and dirty routine to save the stretched bitmap in C format, for the people who wants to recreate the AQUA_BITMAP array with their own default bitmap, instead to provide it to the constructor
-    FILE*          sFileHandle;
-    unsigned char* panDataBmp;
-    int            nCount = sBmpSrc.bmWidthBytes * sBmpSrc.bmHeight;
-    unsigned char  nBufferHi;
-    unsigned char  nBufferLo;
+    FILE*          l_sFileHandle;
+    unsigned char* l_panDataBmp;
+    int            l_nCount = l_sBmpSrc.bmWidthBytes * l_sBmpSrc.bmHeight;
+    unsigned char  l_nBufferHi;
+    unsigned char  l_nBufferLo;
+    int            l_nPointer;
 
-    panDataBmp = new unsigned char[nCount];
+    l_panDataBmp = new unsigned char[l_nCount];
 
-    if(panDataBmp != NULL)
+    if(l_panDataBmp != NULL)
     {
-      sFileHandle = fopen("C:\\aqua_bitmap.cpp", "wt"); // Change the path here
-      if(sFileHandle != NULL)
+      l_sFileHandle = fopen("C:\\aqua_bitmap.cpp", "wt"); // Change the path here
+      if(l_sFileHandle != NULL)
       {
-        m_poStretchBmp->GetBitmapBits(nCount, panDataBmp);
+        mp_poStretchBmp->GetBitmapBits(l_nCount, l_panDataBmp);
 
-        fprintf(sFileHandle, "unsigned char anAQUA_BITMAP[%d] =\n{\n ", nCount);
-        for(int nPointer = 0; nPointer < nCount; nPointer += 1)
+        fprintf(l_sFileHandle, "unsigned char g_anAQUA_BITMAP[%d] =\n{\n ", l_nCount);
+
+        for
+        ( l_nPointer  = 0
+        ; l_nPointer  < l_nCount
+        ; l_nPointer += 1
+        )
         {
-          fputs(" 0x", sFileHandle);
-          nBufferHi = panDataBmp[nPointer];
-          nBufferLo = nBufferHi;
+          fputs(" 0x", l_sFileHandle);
+          l_nBufferHi = l_panDataBmp[l_nPointer];
+          l_nBufferLo = l_nBufferHi;
 
-          nBufferHi >>= 4;
-          nBufferLo  &= 0x0F;
+          l_nBufferHi >>= 4;
+          l_nBufferLo  &= 0x0F;
 
-          if(nBufferHi < 10)
+          if(l_nBufferHi < 10)
           {
-            nBufferHi += '0';
+            l_nBufferHi += '0';
           }
           else
           {
-            nBufferHi += 'A' - 10;
+            l_nBufferHi += 'A' - 10;
           }
 
-          if(nBufferLo < 10)
+          if(l_nBufferLo < 10)
           {
-            nBufferLo += '0';
+            l_nBufferLo += '0';
           }
           else
           {
-            nBufferLo += 'A' - 10;
+            l_nBufferLo += 'A' - 10;
           }
 
-          fputc(nBufferHi, sFileHandle);
-          fputc(nBufferLo, sFileHandle);
+          fputc(l_nBufferHi, l_sFileHandle);
+          fputc(l_nBufferLo, l_sFileHandle);
 
-          fputs(",", sFileHandle);
-          if((nPointer % 16) == 15)
+          fputs(",", l_sFileHandle);
+
+          if
+          (
+               (l_nPointer % 16)
+            == 15
+          )
           { // 16 pixels per line
-            fputs("\n ", sFileHandle);
+            fputs("\n ", l_sFileHandle);
           }else{}
         }
-        fputs("};\n\n", sFileHandle);
+        fputs("};\n\n", l_sFileHandle);
 
-        fputs("BITMAP sAQUA_BITMAP =\n{\n", sFileHandle);
-          fprintf(sFileHandle, "  %d,   // bmType\n",     sBmpSrc.bmType);
-          fprintf(sFileHandle, "  %d,  // bmWidth\n",     sBmpSrc.bmWidth);
-          fprintf(sFileHandle, "  %d,  // bmHeight\n",    sBmpSrc.bmHeight);
-          fprintf(sFileHandle, "  %d, // bmWidthBytes\n", sBmpSrc.bmWidthBytes);
-          fprintf(sFileHandle, "  %d,   // bmPlanes\n",   sBmpSrc.bmPlanes);
-          fprintf(sFileHandle, "  %d,  // bmBitsPixel\n", sBmpSrc.bmBitsPixel);
-          fputs("  anAQUA_BITMAP // bmBits\n", sFileHandle);
-        fputs("};\n", sFileHandle);
+        fputs("BITMAP sAQUA_BITMAP =\n{\n", l_sFileHandle);
+          fprintf(l_sFileHandle, "  %d,   // bmType\n",     l_sBmpSrc.bmType);
+          fprintf(l_sFileHandle, "  %d,  // bmWidth\n",     l_sBmpSrc.bmWidth);
+          fprintf(l_sFileHandle, "  %d,  // bmHeight\n",    l_sBmpSrc.bmHeight);
+          fprintf(l_sFileHandle, "  %d, // bmWidthBytes\n", l_sBmpSrc.bmWidthBytes);
+          fprintf(l_sFileHandle, "  %d,   // bmPlanes\n",   l_sBmpSrc.bmPlanes);
+          fprintf(l_sFileHandle, "  %d,  // bmBitsPixel\n", l_sBmpSrc.bmBitsPixel);
+          fputs("  g_anAQUA_BITMAP // bmBits\n", l_sFileHandle);
+        fputs("};\n", l_sFileHandle);
 
-        fclose(sFileHandle);
+        fclose(l_sFileHandle);
       }else{}
 
-      delete panDataBmp;
+      delete l_panDataBmp;
     }else{}
 #endif //dCSP_CREATE_BITMAP_FILE
 
+    // Image list creation
+
 // DB.... Calculate the size of every element of the image list
-    m_nBmpWidth  = sBmpSrc.bmWidth / cSPB_EnumElements; // cSPB_EnumElements == 5, the bitmap is yet composed of 5 parts
-    m_nBmpHeight = sBmpSrc.bmHeight;
+    mp_nBmpWidth  = l_sBmpSrc.bmWidth / cSPB_EnumElements; // cSPB_EnumElements == 5, the bitmap is yet composed of 5 parts
+    mp_nBmpHeight = l_sBmpSrc.bmHeight;
 
 // DC.... Delete the previous image list the create a new one from scratch (useful when providing a new bitmap during SkinProgress life-time)
-    // Image list creation
-    m_oBarImgLst.DeleteImageList(); // Delete the previous ImageList and recreate it with the new bitmap
+    mp_oBarImgLst.DeleteImageList(); // Delete the previous ImageList and recreate it with the new bitmap
+
 // DD.... Create the new image list in 32 bits to be sure it will accept any kind of bitmap in input (if 8 bits bitmap provided, will be converted in 32 bits)
-    if(!m_oBarImgLst.Create(m_nBmpWidth, m_nBmpHeight, ILC_COLOR32, 0, 0)) // ILC_COLOR32 to be sure to accept any BitMap format passed through i_poBitmap
+    if
+    (
+         mp_oBarImgLst.Create
+         ( mp_nBmpWidth
+         , mp_nBmpHeight
+         , ILC_COLOR32 // ILC_COLOR32 to be sure to accept any BitMap format passed through i_poBitmap
+         , 0
+         , 0
+         )
+      == FALSE
+    )
     {
-      return false;
+      return FALSE;
     }
     else
     {
 // DE.... Add the stretched bitmap in the image list
-      m_oBarImgLst.Add(m_poStretchBmp, RGB(0, 255, 255));
+      mp_oBarImgLst.Add
+      ( mp_poStretchBmp
+      , RGB(0, 255, 255) // SKY BLUE
+      );
 
 // E..... Display the new bitmap
 #ifndef dCSP_TIMED_REDRAW
-      if(i_bDisplay != false)
+      if(i_bDisplay != FALSE)
       {
         RefreshPanes();
       }else{}
 #endif // dCSP_TIMED_REDRAW
 
-      return true;
+      return TRUE;
     }
   }
   else
   {
-    return false;
+    return FALSE;
   }
 }
 
@@ -1783,8 +1922,8 @@ BOOL CSkinProgress::SetBitmap
 /* Role          : Copy a bitmap                                              */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error in copy                             */
-/*                          true  : Image copied                              */
+/*                   BOOL = FALSE : Error in copy                             */
+/*                          TRUE  : Image copied                              */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   o_poBitmap    : Image where to copy                      */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -1812,50 +1951,51 @@ BOOL CSkinProgress::SetBitmap
 /* with [CBitmap::GetBitmapBits((DWORD) i_nDataCount, (LPVOID) i_panDataBmp)] */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::CopyBitmap
-( // Copy a bitmap
-  CBitmap* o_poBitmap, // Pointer to an EXISTING but NOT INITIALIZED bitmap
-  CBitmap* i_poBitmap  // Pointer to the source bitmap
+( CBitmap* o_poBitmap // Pointer to an EXISTING but NOT INITIALIZED bitmap
+, CBitmap* i_poBitmap // Pointer to the source bitmap
 )
-{ 
-  BITMAP         sBmpSrc;
-  unsigned char* panDataBmp;
-  DWORD          nDataCount;
-  BOOL           bResult;
+{ // Copy a bitmap 
+  BITMAP         l_sBmpSrc;
+  unsigned char* l_panDataBmp;
+  DWORD          l_nDataCount;
+  BOOL           l_bResult;
 
   // Init
 
   // Process
 
-  if(
-         (o_poBitmap == NULL)
-      || (i_poBitmap == NULL)
-    )
+  if
+  (
+       (o_poBitmap == NULL)
+    || (i_poBitmap == NULL)
+  )
   {
-    return false;
+    return FALSE;
   }
   else
   {
 // A..... Create a remote data buffer to get the source data
-    i_poBitmap->GetBitmap(&sBmpSrc);
-    nDataCount = sBmpSrc.bmWidthBytes * sBmpSrc.bmHeight;
-    panDataBmp = new unsigned char[nDataCount];
+    i_poBitmap->GetBitmap(&l_sBmpSrc);
 
-    if(panDataBmp != NULL)
+    l_nDataCount = l_sBmpSrc.bmWidthBytes * l_sBmpSrc.bmHeight;
+    l_panDataBmp = new unsigned char[l_nDataCount];
+
+    if(l_panDataBmp != NULL)
     {
 // B..... Get the source data
-      i_poBitmap->GetBitmapBits(nDataCount, panDataBmp);
-      sBmpSrc.bmBits = panDataBmp; // Just complete the BITMAP structure
+      i_poBitmap->GetBitmapBits(l_nDataCount, l_panDataBmp);
+      l_sBmpSrc.bmBits = l_panDataBmp; // Just complete the BITMAP structure
 
 // C..... Copy the bitmap
-      bResult = o_poBitmap->CreateBitmapIndirect(&sBmpSrc);
+      l_bResult = o_poBitmap->CreateBitmapIndirect(&l_sBmpSrc);
 
-      delete[] panDataBmp;
+      delete[] l_panDataBmp;
 
-      return bResult;
+      return l_bResult;
     }
     else
     {
-      return false;
+      return FALSE;
     }
   }
 }
@@ -1865,8 +2005,8 @@ BOOL CSkinProgress::CopyBitmap
 /* Role          : Convert a bitmap to a specified device context             */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error in conversion                       */
-/*                          true  : Image converted                           */
+/*                   BOOL = FALSE : Error in conversion                       */
+/*                          TRUE  : Image converted                           */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   o_poBitmap    : Image where to copy/transform            */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -1905,101 +2045,106 @@ BOOL CSkinProgress::CopyBitmap
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::ConvBitmap
-( // Convert a bitmap to a specified device context
-  CBitmap*    o_poBitmap, // Pointer to an EXISTING but NOT INITIALIZED bitmap
-  CBitmap*    i_poBitmap, // Pointer to the source bitmap
-  CDC*        i_poDC      // = NULL : Pointer to the DC to use for the conversion, if NULL use the current DC
+( CBitmap*    o_poBitmap // Pointer to an EXISTING but NOT INITIALIZED bitmap
+, CBitmap*    i_poBitmap // Pointer to the source bitmap
+, CDC*        i_poDC     // = NULL : Pointer to the DC to use for the conversion, if NULL use the current DC
 )
-{ 
-  BITMAP         sBmpSrc;
-  BITMAPINFO     sBmpInfoSrc;
-  HBITMAP        DIB;
-  unsigned char* panDataBmp;
-  DWORD          nDataCount;
-  int            nResult;
+{ // Convert a bitmap to a specified device context
+  BITMAP         l_sBmpSrc;
+  BITMAPINFO     l_sBmpInfoSrc;
+  HBITMAP        l_hDIB;
+  unsigned char* l_panDataBmp;
+  DWORD          l_nDataCount;
+  int            l_nResult;
 
   // Init
 
-  panDataBmp = NULL;
+  l_panDataBmp = NULL;
 
   // Process
 
-  if(
-         (o_poBitmap != NULL)
-      && (i_poBitmap != NULL)
-    )
+  if
+  (
+       (o_poBitmap != NULL)
+    && (i_poBitmap != NULL)
+  )
   {
     if(i_poDC == NULL)
     { // If no target device context provided, use the current one
 // A..... Get the current DC
-      CClientDC oDC(this);
-      i_poDC = &oDC;
+      CClientDC l_oDC(this);
+      i_poDC = &l_oDC;
     }else{}
 
-    i_poBitmap->GetBitmap(&sBmpSrc); // Get some infos on the source bitmap
+    i_poBitmap->GetBitmap(&l_sBmpSrc); // Get some infos on the source bitmap
 
-    if(sBmpSrc.bmBitsPixel == GetDeviceCaps(*i_poDC, BITSPIXEL))
+    if(l_sBmpSrc.bmBitsPixel == GetDeviceCaps(*i_poDC, BITSPIXEL))
     { // If it's the same bitmap format, just copy it instead to waste some time to convert the picture (what will fail :/ )
 // B..... Copy the bitmap
-      nResult = (int) CopyBitmap(o_poBitmap, i_poBitmap);
+      l_nResult = (int) CopyBitmap(o_poBitmap, i_poBitmap);
     }
     else
     {
 // C..... Create a remote data buffer to get the source data
-      nDataCount = sBmpSrc.bmWidthBytes * sBmpSrc.bmHeight;
-      panDataBmp = new unsigned char[nDataCount];
+      l_nDataCount = l_sBmpSrc.bmWidthBytes * l_sBmpSrc.bmHeight;
+      l_panDataBmp = new unsigned char[l_nDataCount];
 
-      if(panDataBmp != NULL)
+      if(l_panDataBmp != NULL)
       {
 // D..... Get the source data
-        i_poBitmap->GetBitmapBits(nDataCount, panDataBmp);
-        sBmpSrc.bmBits = panDataBmp;
+        i_poBitmap->GetBitmapBits(l_nDataCount, l_panDataBmp);
+        l_sBmpSrc.bmBits = l_panDataBmp;
 
 // E..... Initialize the bitmap
 
-        sBmpInfoSrc.bmiColors[0].rgbBlue      = 0;
-        sBmpInfoSrc.bmiColors[0].rgbGreen     = 0;
-        sBmpInfoSrc.bmiColors[0].rgbRed       = 0;
-        sBmpInfoSrc.bmiColors[0].rgbReserved  = 0;
+        l_sBmpInfoSrc.bmiColors[0].rgbBlue      = 0;
+        l_sBmpInfoSrc.bmiColors[0].rgbGreen     = 0;
+        l_sBmpInfoSrc.bmiColors[0].rgbRed       = 0;
+        l_sBmpInfoSrc.bmiColors[0].rgbReserved  = 0;
 
-        sBmpInfoSrc.bmiHeader.biSize          = sizeof(BITMAPINFOHEADER);
-        sBmpInfoSrc.bmiHeader.biWidth         = sBmpSrc.bmWidth;
-        sBmpInfoSrc.bmiHeader.biHeight        = 0 - sBmpSrc.bmHeight; // 0 - HEIGHT : TOP-DOWN DIB, origin is upper/left corner
-        sBmpInfoSrc.bmiHeader.biPlanes        = sBmpSrc.bmPlanes;
-        sBmpInfoSrc.bmiHeader.biBitCount      = sBmpSrc.bmBitsPixel;
-        sBmpInfoSrc.bmiHeader.biCompression   = BI_RGB;
-        sBmpInfoSrc.bmiHeader.biSizeImage     = 0; // 0 : BI_RGB
-        sBmpInfoSrc.bmiHeader.biXPelsPerMeter = 0;
-        sBmpInfoSrc.bmiHeader.biYPelsPerMeter = 0;
-        sBmpInfoSrc.bmiHeader.biClrUsed       = 0;
-        sBmpInfoSrc.bmiHeader.biClrImportant  = 0;
+        l_sBmpInfoSrc.bmiHeader.biSize          = sizeof(BITMAPINFOHEADER);
+        l_sBmpInfoSrc.bmiHeader.biWidth         = l_sBmpSrc.bmWidth;
+        l_sBmpInfoSrc.bmiHeader.biHeight        = 0 - l_sBmpSrc.bmHeight; // 0 - HEIGHT : TOP-DOWN l_hDIB, origin is upper/left corner
+        l_sBmpInfoSrc.bmiHeader.biPlanes        = l_sBmpSrc.bmPlanes;
+        l_sBmpInfoSrc.bmiHeader.biBitCount      = l_sBmpSrc.bmBitsPixel;
+        l_sBmpInfoSrc.bmiHeader.biCompression   = BI_RGB;
+        l_sBmpInfoSrc.bmiHeader.biSizeImage     = 0; // 0 : BI_RGB
+        l_sBmpInfoSrc.bmiHeader.biXPelsPerMeter = 0;
+        l_sBmpInfoSrc.bmiHeader.biYPelsPerMeter = 0;
+        l_sBmpInfoSrc.bmiHeader.biClrUsed       = 0;
+        l_sBmpInfoSrc.bmiHeader.biClrImportant  = 0;
 
 // F..... Convert the data
-        DIB = CreateDIBitmap
-        (
-          i_poDC->m_hDC,
-          &sBmpInfoSrc.bmiHeader,
-          CBM_INIT,
-          panDataBmp,
-          &sBmpInfoSrc,
-          DIB_RGB_COLORS
+        l_hDIB = CreateDIBitmap
+        ( i_poDC->m_hDC
+        , &l_sBmpInfoSrc.bmiHeader
+        , CBM_INIT
+        , l_panDataBmp
+        , &l_sBmpInfoSrc
+        , DIB_RGB_COLORS
         );
 
 // G..... Copy the converted bitmap
-        nResult = (int) CopyBitmap(o_poBitmap, CBitmap::FromHandle(DIB));
+        l_nResult
+        = (int) 
+          CopyBitmap
+          ( o_poBitmap
+          , CBitmap::FromHandle(l_hDIB)
+          )
+        ;
 
-        DeleteObject(DIB);
-        delete[] panDataBmp;
+        DeleteObject(l_hDIB);
+        delete[] l_panDataBmp;
 
-        if(nResult != 0)
+        if(l_nResult != 0)
         {
-          return true;
+          return TRUE;
         }else{}
       }else{}
     }
   }else{}
 
-  return false;
+  return FALSE;
 }
 
 // *** PROGRESS INTERFACE ***
@@ -2009,8 +2154,8 @@ BOOL CSkinProgress::ConvBitmap
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error while trying to change the range    */
-/*                          true  : New range set                             */
+/*                   BOOL = FALSE : Error while trying to change the range    */
+/*                          TRUE  : New range set                             */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2033,16 +2178,15 @@ BOOL CSkinProgress::ConvBitmap
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::SetRange
-( // Set the new range
-  int  i_nLower,    // Minimum limit
-  int  i_nUpper,    // Maximum limit
-  int  i_nStep,     // = 1     : Step increment
-  BOOL i_bResamble  // = false : Resample the current position from the new Lower and Upper values
+( int  i_nLower    // Minimum limit
+, int  i_nUpper    // Maximum limit
+, int  i_nStep     // = 1     : Step increment
+, BOOL i_bResamble // = FALSE : Resample the current position from the new Lower and Upper values
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay   // = true  : Display the changes
+, BOOL i_bDisplay  // = TRUE  : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Set the new range
 
   // Init
 
@@ -2055,58 +2199,64 @@ BOOL CSkinProgress::SetRange
     ASSERT(i_nLower < i_nUpper); // Seems to be stupid, but avoid zero divide problem in percent calculation just below
 
 // A..... Resample the postion from the previous range to the new one
-    if(i_bResamble != false)
+    if(i_bResamble != FALSE)
     { // Resample positions to readapt them to the new range
 #ifdef dCSP_SLIDERBAR_METHOD
       // Recalculate start
-      m_nLeft  = (int) (
-                           (
-                               ( 
-                                   (LONGLONG) // Turns the whole calculation in 64 bits
-                                   (m_nLeft  - m_nLower) // Old start
-                                 * (i_nUpper - i_nLower) // New range
-                               )
-                             / (m_nUpper - m_nLower)     // Old range
-                           )
-                         + i_nLower                      // New start
-                       );
-      m_nPrevLeft  = m_nLeft;
+      mp_nLeft
+      = (int)
+        (
+          (
+            ( (LONGLONG) // Turns the whole calculation in 64 bits
+              (mp_nLeft  - mp_nLower) // Old start
+              * (i_nUpper - i_nLower) // New range
+            )
+            / (mp_nUpper - mp_nLower)     // Old range
+          )
+          + i_nLower                      // New start
+        )
+      ;
+
+      mp_nPrevLeft  = mp_nLeft;
 #endif // dCSP_SLIDERBAR_METHOD
 
       // Recalculate end
-      m_nRight = (int) (
-                           (
-                               ( 
-                                   (LONGLONG) // Turns the whole calculation in 64 bits
-                                   (m_nRight - m_nLower) // Old end
-                                 * (i_nUpper - i_nLower) // New range
-                               )
-                             / (m_nUpper - m_nLower)     // Old range
-                           )
-                         + i_nLower                      // New end 
-                       );
-      m_nPrevRight = m_nRight;
+      mp_nRight
+      = (int)
+        (
+          (
+            ( (LONGLONG) // Turns the whole calculation in 64 bits
+              (mp_nRight - mp_nLower) // Old end
+              * (i_nUpper - i_nLower) // New range
+            )
+            / (mp_nUpper - mp_nLower)     // Old range
+          )
+          + i_nLower                      // New end 
+        )
+      ;
+
+      mp_nPrevRight = mp_nRight;
     }else{}
 
 // B..... Set the new range values
     // Sets new parameters for good
-    m_nLower = i_nLower;
-    m_nUpper = i_nUpper;
-    m_nStep  = i_nStep;
+    mp_nLower = i_nLower;
+    mp_nUpper = i_nUpper;
+    mp_nStep  = i_nStep;
 
 // C..... Display the new ranged progress bar
 #ifndef dCSP_TIMED_REDRAW
-    if(i_bDisplay != false)
+    if(i_bDisplay != FALSE)
     {
       RefreshPanes();
     }else{}
 #endif // dCSP_TIMED_REDRAW
 
-    return true;
+    return TRUE;
   }
   else
   {
-    return false;
+    return FALSE;
   }
 }
 
@@ -2115,7 +2265,7 @@ BOOL CSkinProgress::SetRange
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Previous <m_nRight> position, 0 if error           */
+/*                   int : Previous <mp_nRight> position, 0 if error          */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2131,17 +2281,16 @@ BOOL CSkinProgress::SetRange
 /*                                                                            */
 /* A..... Jump to a specified <i_nEnd> position                               */
 /* B..... Display the changes                                                 */
-/* C..... Return the previous <m_nRight> position                             */
+/* C..... Return the previous <mp_nRight> position                            */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::SetPos
-( // Set <m_nRight> value
-  int  i_nPos     // Set a new current position
+(  int  i_nPos    // Set a new current position
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay // = true : Display the changes
+, BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Set <mp_nRight> value
 
   // Init
 
@@ -2151,37 +2300,37 @@ int CSkinProgress::SetPos
   {
     ASSERT((-0x7FFFFFFF <= i_nPos) && (i_nPos <= 0x7FFFFFFF));
 
-    if(i_nPos > m_nUpper)
+    if(i_nPos > mp_nUpper)
     { // Avoid problems
-      i_nPos = m_nUpper;
+      i_nPos = mp_nUpper;
     }else{}
 
-    if(i_nPos < m_nLower)
+    if(i_nPos < mp_nLower)
     { // Avoid problems
-      i_nPos = m_nLower;
+      i_nPos = mp_nLower;
     }else{}
 
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(i_nPos < m_nLeft)
+    if(i_nPos < mp_nLeft)
     { // Avoid problems
-      i_nPos = m_nLeft;
+      i_nPos = mp_nLeft;
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
-    m_nPrevRight = m_nRight;
+    mp_nPrevRight = mp_nRight;
 // A..... Jump to a specified <i_nEnd> position
-    m_nRight     = i_nPos;
+    mp_nRight     = i_nPos;
 
 // B..... Display the changes
 #ifndef dCSP_TIMED_REDRAW
-    if(i_bDisplay != false)
+    if(i_bDisplay != FALSE)
     {
       RefreshPanes();
     }else{}
 #endif // dCSP_TIMED_REDRAW
 
-// C..... Return the previous <m_nRight> position
-    return m_nPrevRight;
+// C..... Return the previous <mp_nRight> position
+    return mp_nPrevRight;
   }
   else
   {
@@ -2194,7 +2343,7 @@ int CSkinProgress::SetPos
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Previous <m_nRight> position, 0 if error           */
+/*                   int : Previous <mp_nRight> position, 0 if error          */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2208,19 +2357,18 @@ int CSkinProgress::SetPos
 /*----------------------------------------------------------------------------*/
 /* PROC OffsetPos                                                             */
 /*                                                                            */
-/* A..... Add a <i_nEnd> offset to the current <m_nRight> position            */
+/* A..... Add a <i_nEnd> offset to the current <mp_nRight> position           */
 /* B..... Display the changes                                                 */
-/* C..... Return the previous <m_nRight> position                             */
+/* C..... Return the previous <mp_nRight> position                            */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::OffsetPos
-( // Forward of <i_nOffset> value
-  int  i_nOffset  // Add the offset to the current position (can be negative)
+( int  i_nOffset  // Add the offset to the current position (can be negative)
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay // = true : Display the changes
+, BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{ 
+{ // Forward of <i_nOffset> value
 
   // Init
 
@@ -2228,37 +2376,37 @@ int CSkinProgress::OffsetPos
 
   if(IsWindow(GetSafeHwnd()))
   {
-    m_nPrevRight  = m_nRight;
-// A..... Add a <i_nEnd> offset to the current <m_nRight> position
-    m_nRight     += i_nOffset;
+    mp_nPrevRight  = mp_nRight;
+// A..... Add a <i_nEnd> offset to the current <mp_nRight> position
+    mp_nRight     += i_nOffset;
 
-    if(m_nRight > m_nUpper)
+    if(mp_nRight > mp_nUpper)
     { // Avoid problems
-      m_nRight = m_nUpper;
+      mp_nRight = mp_nUpper;
     }else{}
 
-    if(m_nRight < m_nLower)
+    if(mp_nRight < mp_nLower)
     { // Avoid problems
-      m_nRight = m_nLower;
+      mp_nRight = mp_nLower;
     }else{}
 
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nRight < m_nLeft)
+    if(mp_nRight < mp_nLeft)
     { // Avoid problems
-      m_nRight = m_nLeft;
+      mp_nRight = mp_nLeft;
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // B..... Display the changes
 #ifndef dCSP_TIMED_REDRAW
-    if(i_bDisplay != false)
+    if(i_bDisplay != FALSE)
     {
       RefreshPanes();
     }else{}
 #endif // dCSP_TIMED_REDRAW
 
-// C..... Return the previous <m_nRight> position
-    return m_nPrevRight;
+// C..... Return the previous <mp_nRight> position
+    return mp_nPrevRight;
   }
   else
   {
@@ -2271,7 +2419,7 @@ int CSkinProgress::OffsetPos
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Previous <m_nStep> setting, 0 if error             */
+/*                   int : Previous <mp_nStep> setting, 0 if error            */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2283,16 +2431,15 @@ int CSkinProgress::OffsetPos
 /*----------------------------------------------------------------------------*/
 /* PROC SetStep                                                               */
 /*                                                                            */
-/* A..... Set the <m_nStep> step increment value                              */
-/* C..... Return the previous <m_nStep> step increment value                  */
+/* A..... Set the <mp_nStep> step increment value                             */
+/* C..... Return the previous <mp_nStep> step increment value                 */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::SetStep
-( // Set <m_nStep> value
-  int i_nStep // Set the step increment
+( int i_nStep // Set the step increment
 )             
-{ 
-  int PrevStep;
+{ // Set <mp_nStep> value
+  int l_nPrevStep;
 
   // Init
 
@@ -2300,12 +2447,12 @@ int CSkinProgress::SetStep
 
   if(IsWindow(GetSafeHwnd()))
   {
-    PrevStep  = m_nStep;
-// A..... Set the <m_nStep> step increment value
-    m_nStep   = i_nStep;
+    l_nPrevStep = mp_nStep;
+// A..... Set the <mp_nStep> step increment value
+    mp_nStep    = i_nStep;
 
-// B..... Return the previous <m_nStep> step increment value
-    return PrevStep;
+// B..... Return the previous <mp_nStep> step increment value
+    return l_nPrevStep;
   }
   else
   {
@@ -2318,7 +2465,7 @@ int CSkinProgress::SetStep
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Previous <m_nRight> position, 0 if error           */
+/*                   int : Previous <mp_nRight> position, 0 if error          */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2331,18 +2478,18 @@ int CSkinProgress::SetStep
 /*----------------------------------------------------------------------------*/
 /* PROC StepIt                                                                */
 /*                                                                            */
-/* A..... Step the <m_nRight> position from the <m_nStep> increment value     */
+/* A..... Step the <mp_nRight> position from the <mp_nStep> increment value   */
 /* B..... Display the changes                                                 */
-/* C..... Return the previous <m_nRight> position                             */
+/* C..... Return the previous <mp_nRight> position                            */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::StepIt
-( // Forward of <m_nStep> value
+(
 #ifndef dCSP_TIMED_REDRAW
-  BOOL i_bDisplay // = true : Display the changes
+  BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 ) 
-{ 
+{ // Forward of <mp_nStep> value 
 
   // Init
 
@@ -2350,37 +2497,37 @@ int CSkinProgress::StepIt
 
   if(IsWindow(GetSafeHwnd()))
   {
-    m_nPrevRight  = m_nRight;
-// A..... Step the <m_nRight> position from the <m_nStep> step increment value
-    m_nRight     += m_nStep;
+    mp_nPrevRight  = mp_nRight;
+// A..... Step the <mp_nRight> position from the <mp_nStep> step increment value
+    mp_nRight     += mp_nStep;
 
-    if(m_nRight > m_nUpper)
+    if(mp_nRight > mp_nUpper)
     { // Avoid problems
-      m_nRight = m_nUpper;
+      mp_nRight = mp_nUpper;
     }else{}
 
-    if(m_nRight < m_nLower)
+    if(mp_nRight < mp_nLower)
     { // Avoid problems
-      m_nRight = m_nLower;
+      mp_nRight = mp_nLower;
     }else{}
 
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nRight < m_nLeft)
+    if(mp_nRight < mp_nLeft)
     { // Avoid problems
-      m_nRight = m_nLeft;
+      mp_nRight = mp_nLeft;
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // B..... Display the changes
 #ifndef dCSP_TIMED_REDRAW
-    if(i_bDisplay != false)
+    if(i_bDisplay != FALSE)
     {
       RefreshPanes();
     }else{}
 #endif // dCSP_TIMED_REDRAW
 
-// C..... Return the previous <m_nRight> position
-    return m_nPrevRight;
+// C..... Return the previous <mp_nRight> position
+    return mp_nPrevRight;
   }
   else
   {
@@ -2395,8 +2542,8 @@ int CSkinProgress::StepIt
 /* Role          : Change the size of the progress bar if in pane 0           */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : NEVER                                     */
-/*                          true  : ALWAYS                                    */
+/*                   BOOL = FALSE : NEVER                                     */
+/*                          TRUE  : ALWAYS                                    */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2414,13 +2561,12 @@ int CSkinProgress::StepIt
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::SetSize
-( // Set size of the progress bar in pane 0 
-  int  i_nSize     // Set the size of the progress bar
+( int  i_nSize     // Set the size of the progress bar
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay // = true : Display the changes
+, BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Set size of the progress bar in pane 0
 
   // Init
 
@@ -2434,13 +2580,13 @@ BOOL CSkinProgress::SetSize
     i_nSize -= 2;
   }else{}
 
-  m_nSize = i_nSize;
+  mp_nSize = i_nSize;
 
   // Process
 
 // B..... Display the resized progress bar
 #ifndef dCSP_TIMED_REDRAW
-  if(i_bDisplay != false)
+  if(i_bDisplay != FALSE)
   {
     RefreshPanes();
   }else{}
@@ -2448,7 +2594,7 @@ BOOL CSkinProgress::SetSize
 
   // Return
 
-  return true;
+  return TRUE;
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
@@ -2464,13 +2610,13 @@ BOOL CSkinProgress::SetSize
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nSize> value                     */
+/* Behavior      : A - Return the current <mp_nSize> value                    */
 /*                 B - Return the CWnd based pane size                        */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
 /* [IF progress bar in status bar]                                            */
-/* : A..... Return the current <m_nSize> value                                */
+/* : A..... Return the current <mp_nSize> value                               */
 /* [ELSE]                                                                     */
 /* : [IF get the target pane rectangle]                                       */
 /* : : B..... Return the CWnd based pane size                                 */
@@ -2486,40 +2632,38 @@ BOOL CSkinProgress::SetSize
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetSize
-( // Get width or height of the progress bar in pixel, mostly used in CSkinSlider
+(
 )
-{
+{ // Get width or height of the progress bar in pixel, mostly used in CSkinSlider
 #ifdef dCSP_DIALOG_PROGRESS
-  CRect oRectPane;
+  CRect l_oRectPane;
 
   // Init
 
   // Process + Return
 
-  if(m_poWndProgress == NULL)
+  if(mp_poWndProgress == NULL)
   {
 #endif // dCSP_DIALOG_PROGRESS
-// A..... Return the current <m_nSize> value
-    return m_nSize;
+// A..... Return the current <mp_nSize> value
+    return mp_nSize;
 #ifdef dCSP_DIALOG_PROGRESS
   }
   else
   {
 // B..... Return the CWnd based pane size
-    if(GetTargetRect(&oRectPane))
+    if(_GetTargetRect(&l_oRectPane))
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      {
-#endif // dCSP_VERTICAL_BAR
-        return oRectPane.Width();
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical Bar
+        return l_oRectPane.Height();
       }
       else
-      {
-        return oRectPane.Height();
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal Bar
+        return l_oRectPane.Width();
+      }
     }
     else
     {
@@ -2531,132 +2675,131 @@ int CSkinProgress::GetSize
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
 /* Name          : GetPos                                                     */
-/* Role          : Get <m_nRight> value                                       */
+/* Role          : Get <mp_nRight> value                                      */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Current <m_nRight> position                        */
+/*                   int : Current <mp_nRight> position                       */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   i_bPercent : Return the position in percent              */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nRight> position                 */
-/*                 B - Return the current <m_nRight position in percent       */
+/* Behavior      : A - Return the current <mp_nRight> position                */
+/*                 B - Return the current <mp_nRight position in percent      */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
 /* [IF normal mode]                                                           */
-/* : A..... Return the current <m_nRight> position                            */
+/* : A..... Return the current <mp_nRight> position                           */
 /* [ELSE]                                                                     */
-/* : B..... Return the current <m_nRight> position in percent                 */
+/* : B..... Return the current <mp_nRight> position in percent                */
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /* If return in percent, 90% gives 23040, divided by 256 (>> 8) returns 90 !  */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetPos
-( // Get <m_nRight> value
-  BOOL i_bPercent // = false
+( BOOL i_bPercent // = FALSE
 )
-{
-  if(i_bPercent == false)
+{ // Get <mp_nRight> value
+  if(i_bPercent == FALSE)
   {
-// A..... Return the current <m_nRight> position
-    return m_nRight;
+// A..... Return the current <mp_nRight> position
+    return mp_nRight;
   }
   else
   {
-// B..... Return the current <m_nRight> position in 8-bits fixed point percent value ('>> 8' to get the 'int' value)
-    return (int) ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
-                     (
-                         (LONGLONG) // Turns the whole calculation in 64 bits
-                         (m_nRight - m_nLower)
-                       * 25600
-                     )
-                   / (m_nUpper - m_nLower)
-                 );
+// B..... Return the current <mp_nRight> position in 8-bits fixed point percent value ('>> 8' to get the 'int' value)
+    return (int)
+    ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
+      ( (LONGLONG) // Turns the whole calculation in 64 bits
+        (mp_nRight - mp_nLower)
+        * 25600
+      )
+      / (mp_nUpper - mp_nLower)
+    );
   }
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
 /* Name          : GetStep                                                    */
-/* Role          : Get <m_nStep> value                                        */
+/* Role          : Get <mp_nStep> value                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Current <m_nStep> value                            */
+/*                   int : Current <mp_nStep> value                           */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nStep> value                     */
+/* Behavior      : A - Return the current <mp_nStep> value                    */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
-/* A..... Return the current <m_nStep> value                                  */
+/* A..... Return the current <mp_nStep> value                                 */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetStep
-( // Get <m_nStep> value
+(
 )
-{
-// A..... Return the current <m_nStep> value
-  return m_nStep;
+{ // Get <mp_nStep> value
+// A..... Return the current <mp_nStep> value
+  return mp_nStep;
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
 /* Name          : GetLower                                                   */
-/* Role          : Get <m_nLower> value                                       */
+/* Role          : Get <mp_nLower> value                                      */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Current <m_nLower> value                           */
+/*                   int : Current <mp_nLower> value                          */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nLower> value                    */
+/* Behavior      : A - Return the current <mp_nLower> value                   */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
-/* A..... Return the current <m_nLower> value                                 */
+/* A..... Return the current <mp_nLower> value                                */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetLower
-( // Get <m_nLower> value
+(
 )
-{
-// A..... Return the current <m_nLower> value
-  return m_nLower;
+{ // Get <mp_nLower> value
+// A..... Return the current <mp_nLower> value
+  return mp_nLower;
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
 /* Name          : GetUpper                                                   */
-/* Role          : Get <m_nUpper> value                                       */
+/* Role          : Get <mp_nUpper> value                                      */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Current <m_nUpper> value                           */
+/*                   int : Current <mp_nUpper> value                          */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nUpper> value                    */
+/* Behavior      : A - Return the current <mp_nUpper> value                   */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
-/* A..... Return the current <m_nUpper> value                                 */
+/* A..... Return the current <mp_nUpper> value                                */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetUpper
-( // Get <m_nUpper> value
+(
 )
-{
-// A..... Return the current <m_nUpper> value
-  return m_nUpper;
+{ // Get <mp_nUpper> value
+// A..... Return the current <mp_nUpper> value
+  return mp_nUpper;
 }
 
 #ifdef dCSP_SLIDERBAR_METHOD
@@ -2665,7 +2808,7 @@ int CSkinProgress::GetUpper
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Previous <m_nLeft> position, 0 if error            */
+/*                   int : Previous <mp_nLeft> position, 0 if error           */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2681,17 +2824,16 @@ int CSkinProgress::GetUpper
 /*                                                                            */
 /* A..... Jump to a specified <i_nStart> position                             */
 /* B..... Display the changes                                                 */
-/* C..... Return the previous <m_nLeft> position                              */
+/* C..... Return the previous <mp_nLeft> position                             */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::SetStart
-( // Set <m_nLeft> value
-  int  i_nStart   // Set a new start position
+( int  i_nStart   // Set a new start position
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay // = true : Display the changes
+, BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Set <mp_nLeft> value
 
   // Init
 
@@ -2701,35 +2843,35 @@ int CSkinProgress::SetStart
   {
     ASSERT((-0x7FFFFFFF <= i_nStart) && (i_nStart <= 0x7FFFFFFF));
 
-    if(i_nStart > m_nUpper)
+    if(i_nStart > mp_nUpper)
     { // Avoid problems
-      i_nStart = m_nUpper;
+      i_nStart = mp_nUpper;
     }else{}
 
-    if(i_nStart < m_nLower)
+    if(i_nStart < mp_nLower)
     { // Avoid problems
-      i_nStart = m_nLower;
+      i_nStart = mp_nLower;
     }else{}
 
-    if(i_nStart > m_nRight)
+    if(i_nStart > mp_nRight)
     { // Avoid problems
-      i_nStart = m_nRight;
+      i_nStart = mp_nRight;
     }else{}
 
-    m_nPrevLeft = m_nLeft;
+    mp_nPrevLeft = mp_nLeft;
 // A..... Jump to a specified <i_nEnd> position
-    m_nLeft     = i_nStart;
+    mp_nLeft     = i_nStart;
 
 // B..... Display the changes
 #ifndef dCSP_TIMED_REDRAW
-    if(i_bDisplay != false)
+    if(i_bDisplay != FALSE)
     {
       RefreshPanes();
     }else{}
 #endif // dCSP_TIMED_REDRAW
 
-// C..... Return the previous <m_nPrevLeft> position
-    return m_nPrevLeft;
+// C..... Return the previous <mp_nPrevLeft> position
+    return mp_nPrevLeft;
   }
   else
   {
@@ -2739,50 +2881,49 @@ int CSkinProgress::SetStart
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
 /* Name          : GetStart                                                   */
-/* Role          : Get <m_nLeft> value                                        */
+/* Role          : Get <mp_nLeft> value                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : Current <m_nLeft> position                         */
+/*                   int : Current <mp_nLeft> position                        */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   i_bPercent : Return the position in percent              */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nLeft> position                  */
-/*                 B - Return the current <m_nLeft> position in percent       */
+/* Behavior      : A - Return the current <mp_nLeft> position                 */
+/*                 B - Return the current <mp_nLeft> position in percent      */
 /*----------------------------------------------------------------------------*/
 /* PROC SetStart                                                              */
 /*                                                                            */
 /* [IF normal mode]                                                           */
-/* : A..... Return the current <m_nLeft> position                             */
+/* : A..... Return the current <mp_nLeft> position                            */
 /* [ELSE]                                                                     */
-/* : B..... Return the current <m_nLeft> position in percent                  */
+/* : B..... Return the current <mp_nLeft> position in percent                 */
 /* [ENDIF]                                                                    */
 /*----------------------------------------------------------------------------*/
 /* If return in percent, 90% gives 23040, divided by 256 (>> 8) returns 90 !  */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetStart
-( // Get <m_nLeft> value
-  BOOL i_bPercent // = false
+( BOOL i_bPercent // = FALSE
 )
-{
-  if(i_bPercent == false)
+{ // Get <mp_nLeft> value
+  if(i_bPercent == FALSE)
   {
-// A..... Return the current <m_nLeft> position
-    return m_nLeft;
+// A..... Return the current <mp_nLeft> position
+    return mp_nLeft;
   }
   else
   {
-// B..... Return the current <m_nLeft> position in 8-bits fixed point percent value ('>> 8' to get the 'int' value)
-    return (int) ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
-                     (
-                         (LONGLONG) // Turns the whole calculation in 64 bits
-                         (m_nLeft - m_nLower)
-                       * 25600
-                     )
-                   / (m_nUpper - m_nLower)
-                 );
+// B..... Return the current <mp_nLeft> position in 8-bits fixed point percent value ('>> 8' to get the 'int' value)
+    return (int)
+    ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
+      ( (LONGLONG) // Turns the whole calculation in 64 bits
+        (mp_nLeft - mp_nLower)
+        * 25600
+      )
+      / (mp_nUpper - mp_nLower)
+    );
   }
 }
 #endif // dCSP_SLIDERBAR_METHOD
@@ -2809,12 +2950,12 @@ int CSkinProgress::GetStart
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 void CSkinProgress::Reset
-( // Restart the progress bar
+(
 #ifndef dCSP_TIMED_REDRAW
-  BOOL i_bDisplay // = true : Display the changes
+  BOOL i_bDisplay // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Restart the progress bar
   FILETIME sStartTimeFile;
 
   // Init
@@ -2822,24 +2963,23 @@ void CSkinProgress::Reset
   // Process
 
 // A..... Get the creation date and time of the progress bar
-//  GetSystemTime(&m_sStartTimeSystem);
-  GetLocalTime(&m_sStartTimeSystem);
-  SystemTimeToFileTime(&m_sStartTimeSystem, &sStartTimeFile);
-  m_nStartTimeLongLong = (
-                             (
-                                  (LONGLONG) // Turns the whole calculation in 64 bits
-                                  sStartTimeFile.dwHighDateTime
-                               << 32
-                             )
-                           | sStartTimeFile.dwLowDateTime
-                         );
+//  GetSystemTime(&mp_sStartTimeSystem);
+  GetLocalTime(&mp_sStartTimeSystem);
+  SystemTimeToFileTime(&mp_sStartTimeSystem, &sStartTimeFile);
+
+  mp_nStartTimeLongLong
+  = ( (LONGLONG) // Turns the whole calculation in 64 bits
+      sStartTimeFile.dwHighDateTime
+      << 32
+    )
+  | sStartTimeFile.dwLowDateTime
+  ;
 
 // B..... Set the position of the bar to its beginning
   SetPos
-  (
-    m_nLower
+  ( mp_nLower
 #ifndef dCSP_TIMED_REDRAW
-   ,i_bDisplay
+  , i_bDisplay
 #endif // dCSP_TIMED_REDRAW
   );
 }
@@ -2851,8 +2991,8 @@ void CSkinProgress::Reset
 /* Role          : Change the text                                            */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : NEVER                                     */
-/*                          true  : ALWAYS                                    */
+/*                   BOOL = FALSE : NEVER                                     */
+/*                          TRUE  : ALWAYS                                    */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2870,24 +3010,23 @@ void CSkinProgress::Reset
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::SetText
-( // Set the new text
-  LPCTSTR i_poStrMessage  // New text to display      
+( LPCTSTR i_poStrMessage  // New text to display      
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL    i_bDisplay      // = true : Display the changes
+, BOOL    i_bDisplay      // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{ 
+{ // Set the new text
 
   // Init
 
 // A..... Set the new text
-  m_oStrMessage = i_poStrMessage;
+  mp_oStrMessage = i_poStrMessage;
 
   // Process
 
 // B..... Display the changes
 #ifndef dCSP_TIMED_REDRAW
-  if(i_bDisplay != false)
+  if(i_bDisplay != FALSE)
   {
     RefreshPanes();
   }else{}
@@ -2895,7 +3034,7 @@ BOOL CSkinProgress::SetText
 
   // Return
 
-  return true;
+  return TRUE;
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
@@ -2903,8 +3042,8 @@ BOOL CSkinProgress::SetText
 /* Role          : Change the completion status text                          */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : NEVER                                     */
-/*                          true  : ALWAYS                                    */
+/*                   BOOL = FALSE : NEVER                                     */
+/*                          TRUE  : ALWAYS                                    */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -2922,24 +3061,23 @@ BOOL CSkinProgress::SetText
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::SetProgress
-( // Set <m_nProgressText> value
-  int  i_nProgress  // Set progress text
+( int  i_nProgress  // Set progress text
 #ifndef dCSP_TIMED_REDRAW
- ,BOOL i_bDisplay   // = true : Display the changes
+, BOOL i_bDisplay   // = TRUE : Display the changes
 #endif // dCSP_TIMED_REDRAW
 )
-{
+{ // Set <mp_nProgressText> value
 
   // Init
 
 // A..... Set the new progress text
-  m_nProgressText = i_nProgress;
+  mp_nProgressText = i_nProgress;
 
   // Process
 
 // B..... Display the resized progress bar
 #ifndef dCSP_TIMED_REDRAW
-  if(i_bDisplay != false)
+  if(i_bDisplay != FALSE)
   {
     RefreshPanes();
   }else{}
@@ -2947,7 +3085,7 @@ BOOL CSkinProgress::SetProgress
 
   // Return
 
-  return true;
+  return TRUE;
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
@@ -2955,24 +3093,24 @@ BOOL CSkinProgress::SetProgress
 /* Role          : Get the completion status message currently used           */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   int : The current <m_nProgressText> value                */
+/*                   int : The current <mp_nProgressText> value               */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
 /*                   None                                                     */
 /* Pre-condition : None                                                       */
 /* Constraints   : None                                                       */
-/* Behavior      : A - Return the current <m_nProgressText> value             */
+/* Behavior      : A - Return the current <mp_nProgressText> value            */
 /*----------------------------------------------------------------------------*/
 /* PROC GetProgress                                                           */
 /*                                                                            */
-/* A..... Return the current <m_nProgressText> value                          */
+/* A..... Return the current <mp_nProgressText> value                         */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 int CSkinProgress::GetProgress
-( // Get <m_nProgressText> value
+(
 )
-{
+{ // Get <mp_nProgressText> value
 
   // Init
 
@@ -2980,8 +3118,8 @@ int CSkinProgress::GetProgress
 
   // Return
 
-// A..... Return the current <m_nProgressText> value
-  return m_nProgressText;
+// A..... Return the current <mp_nProgressText> value
+  return mp_nProgressText;
 }
 
 // *** UPDATE PROCESS ***
@@ -2991,8 +3129,8 @@ int CSkinProgress::GetProgress
 /* Role          : None                                                       */
 /* Type          : public                                                     */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : Error while trying to resize the text     */
-/*                          true  : Process completed without error           */
+/*                   BOOL = FALSE : Error while trying to resize the text     */
+/*                          TRUE  : Process completed without error           */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   None                                                     */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -3132,250 +3270,252 @@ int CSkinProgress::GetProgress
 #define cRTP_PERCENT (cRTP_NOTEXT  << 1)
 #define cRTP_TIMED   (cRTP_PERCENT << 1)
 BOOL CSkinProgress::RefreshPanes
-( // Resize the text pane and the progress bar
+(
 ) 
-{
-  CStatusBar* poStatusBar;
-  CWnd*       poTextCWnd;
-  CFont*      poFontOld;
+{ // Resize the text pane and the progress bar
+  CStatusBar* l_poStatusBar;
+  CWnd*       l_poTextCWnd;
+  CFont*      l_poFontOld;
 
-  CString     oStrMessage;    // Working buffer for m_oStrMessage
-  CString     oStrPercent;    // Percent of completion level
-  CString     oStrTimed;      // Timed completion level
+  CString     l_oStrMessage;    // Working buffer for mp_oStrMessage
+  CString     l_oStrPercent;    // Percent of completion level
+  CString     l_oStrTimed;      // Timed completion level
 
-  int         nProgressText;  // Absolute value of <m_nProgressText>
+  int         l_nProgressText;  // Absolute value of <mp_nProgressText>
 
-  int         nLenMessage;    // Len of m_oStrMessage in pixel
-  int         nLenPercent;    // Len of oStrPercent in pixel
-  int         nLenTimed;      // Len of oStrTimed in pixel
-  int         nLenMargin;     // Len of 2*' ' in pixel
-  int         nLenCompact;    // Number of character packed
+  int         l_nLenMessage;    // Len of mp_oStrMessage in pixel
+  int         l_nLenPercent;    // Len of l_oStrPercent in pixel
+  int         l_nLenTimed;      // Len of l_oStrTimed in pixel
+  int         l_nLenMargin;     // Len of 2*' ' in pixel
+  int         l_nLenCompact;    // Number of character packed
 
-  int         nLenText;       // Allowed len of the text (used to wrap it)
-  int         nLenPane;       // 
-  int         nLenBlock;      // Flags for computation (text wrapping)
+  int         l_nLenText;       // Allowed len of the text (used to wrap it)
+  int         l_nLenPane;       // 
+  int         l_nLenBlock;      // Flags for computation (text wrapping)
 
-  CRect       oRectText;      // Rect of pane 0 -> oRectPane at the end of the process if m_nPane == 0
-  CRect       oRectPane;      // Rect of pane m_nPane, can be also pane 0
+  CRect       l_oRectText;      // Rect of pane 0 -> l_oRectPane at the end of the process if mp_nPane == 0
+  CRect       l_oRectPane;      // Rect of pane mp_nPane, can be also pane 0
 
   // Init
 
-  poStatusBar   = NULL; // AVOID /W4 -> HA.... *STUPID COMPILER*
-  poTextCWnd    = NULL; // AVOID /W4 -> BA.... *STUPID COMPILER*
+  l_poStatusBar = NULL; // AVOID /W4 -> HA.... *STUPID COMPILER*
+  l_poTextCWnd  = NULL; // AVOID /W4 -> BA.... *STUPID COMPILER*
 
-  nLenPercent   = 0;    // AVOID /W4 -> DB.... *STUPID COMPILER*
-  nLenTimed     = 0;    // AVOID /W4 -> DDA... *STUPID COMPILER*
-  nLenText      = 0;    // AVOID /W4 -> DE.... *STUPID COMPILER*
-  nLenBlock     = 0;    // AVOID /W4 -> F..... *STUPID COMPILER*
+  l_nLenPercent = 0;    // AVOID /W4 -> DB.... *STUPID COMPILER*
+  l_nLenTimed   = 0;    // AVOID /W4 -> DDA... *STUPID COMPILER*
+  l_nLenText    = 0;    // AVOID /W4 -> DE.... *STUPID COMPILER*
+  l_nLenBlock   = 0;    // AVOID /W4 -> F..... *STUPID COMPILER*
 
-  if(m_nProgressText < 0)
+  if(mp_nProgressText < 0)
   {
-    nProgressText = 0 - m_nProgressText; // Make it positive
+    l_nProgressText = 0 - mp_nProgressText; // Make it positive
   }
   else
   {
-    nProgressText = m_nProgressText;
+    l_nProgressText = mp_nProgressText;
   }
 
   // Process + Return
-
 
   if(IsWindow(GetSafeHwnd()))
   {
 // A..... Get the text pane pointer and dimension
 #ifdef dCSP_DIALOG_PROGRESS
-    if(m_poWndProgress != NULL)
+    if(mp_poWndProgress != NULL)
     {
 // AA.... Dialog CWnd text anchor
-      if(m_poWndMessage != NULL)
+      if(mp_poWndMessage != NULL)
       {
-        poTextCWnd = m_poWndMessage;
-        poTextCWnd->GetWindowRect(oRectText);
+        l_poTextCWnd = mp_poWndMessage;
+        l_poTextCWnd->GetWindowRect(l_oRectText);
       }else{}
     }
     else
     {
 #endif // dCSP_DIALOG_PROGRESS
-      poStatusBar = GetStatusBar();
-      if(poStatusBar != NULL)
+      l_poStatusBar = _GetStatusBar();
+      if(l_poStatusBar != NULL)
       {
 // AB.... Status bar pane 0
-        poTextCWnd = poStatusBar;
-        poStatusBar->GetItemRect(0, oRectText);
+        l_poTextCWnd = l_poStatusBar;
+        l_poStatusBar->GetItemRect(0, l_oRectText);
       }
       else
       {
-        return false;
+        return FALSE;
       }
 #ifdef dCSP_DIALOG_PROGRESS
     }
 #endif // dCSP_DIALOG_PROGRESS
 
 // B..... Progress pane size calculation
-    if(GetTargetRect(&oRectPane))
+    if(_GetTargetRect(&l_oRectPane))
     {
 // BA.... Set the size of the progress bar to the full width of its current pane
-      nLenPane = oRectPane.Width();
+      l_nLenPane = l_oRectPane.Width();
 
-      if(poTextCWnd != NULL)
+      if(l_poTextCWnd != NULL)
       {
 // BB.... Get text pane's DC
-        CClientDC oDC(poTextCWnd);
-        poFontOld = oDC.SelectObject(poTextCWnd->GetFont());
+        CClientDC l_oDC(l_poTextCWnd);
+
+        l_poFontOld = l_oDC.SelectObject(l_poTextCWnd->GetFont());
 
 #ifdef dCSP_DIALOG_PROGRESS
-        if(m_poWndProgress == NULL)
+        if(mp_poWndProgress == NULL)
         {
 #endif // dCSP_DIALOG_PROGRESS
 // BC.... Calculate the fixed size of the progress bar
-          if(
-                 (m_nPane == 0)
-              && (m_nSize != 0)
-            )
+          if
+          (
+               (mp_nPane == 0)
+            && (mp_nSize != 0)
+          )
           { // If the text pane is shared with the progress bar, calculate how much space the text takes up
-            if(m_nSize > 0)
+            if(mp_nSize > 0)
             { // Force progress bar size
 // BCA... Calculate the remaining size for the text once removed the fixed size of the progress bar
-              nLenPane = oRectText.Width() - (m_nSize - 3); // Minus 3 to keep the same spacing with the others ways just below, to resize the text
-              nLenText = nLenPane; // Use the remaining space left by the resized progress bar
+              l_nLenPane = l_oRectText.Width() - (mp_nSize - 3); // Minus 3 to keep the same spacing with the others ways just below, to resize the text
+              l_nLenText = l_nLenPane; // Use the remaining space left by the resized progress bar
             }
             else
             { // Resize the progress bar if the text is too long
 // BCB... Calculate the size of the text to use (here the whole width of pane 0)
-              nLenPane = oRectText.Width() + m_nSize; // *BEWARE* : m_nSize < 0 -> Get the optimal width of the progress bar before resizing it if necessary
-              nLenText = oRectText.Width() - 3; // Use the whole space of pane 0, minus 3 to avoid a complete pane 0 disclosure leading to a windows bug
+              l_nLenPane = l_oRectText.Width() + mp_nSize; // *BEWARE* : mp_nSize < 0 -> Get the optimal width of the progress bar before resizing it if necessary
+              l_nLenText = l_oRectText.Width() - 3; // Use the whole space of pane 0, minus 3 to avoid a complete pane 0 disclosure leading to a windows bug
             }
           }
           else
-          { // Resize the text if it is too long (even in pane 0 if m_nSize == 0)
+          { // Resize the text if it is too long (even in pane 0 if mp_nSize == 0)
 // BCC... Use whole width of pane 0 for the text, and what remains for the progress bar
-            nLenPane = 0; // Full length for the progress bar, might be resized for pane 0
-            nLenText = oRectText.Width() - 3; // Use the whole space of pane 0, minus 3 to avoid a complete pane 0 disclosure leading to a windows bug
+            l_nLenPane = 0; // Full length for the progress bar, might be resized for pane 0
+            l_nLenText = l_oRectText.Width() - 3; // Use the whole space of pane 0, minus 3 to avoid a complete pane 0 disclosure leading to a windows bug
           }
 #ifdef dCSP_DIALOG_PROGRESS
         }
         else
         {
 // BD.... Use all the space of the CWnd text anchor
-          if(poTextCWnd != NULL)
+          if(l_poTextCWnd != NULL)
           { // Use the whole lenght of the CWnd text pane
-            nLenText = oRectText.Width();
+            l_nLenText = l_oRectText.Width();
           }else{}
         }
 #endif // dCSP_DIALOG_PROGRESS
 
-        if(poTextCWnd->IsWindowVisible())
+        if(l_poTextCWnd->IsWindowVisible())
         { // Redraw the text window
 // C..... Get optional message length
-          if(nProgressText != cSPT_NONE)
+          if(l_nProgressText != cSPT_NONE)
           { // Calculate progress text
 // CA.... Get the length of the cSPT_PERCENT message
-            oStrPercent.Format
-            (
-              "%d%%",
-              (int) // Result on 'int'
+            l_oStrPercent.Format
+            ( "%d%%"
+            , (int) // Result on 'int'
               ( // From 0 to 100
-                  (
-                      (LONGLONG) // Turns the whole calculation in 64 bits
-                      (m_nRight - m_nLower)
-                    * 100
-                  )
-                / (m_nUpper - m_nLower)
+                ( (LONGLONG) // Turns the whole calculation in 64 bits
+                  (mp_nRight - mp_nLower)
+                * 100
+                )
+                / (mp_nUpper - mp_nLower)
               )
             );
 
-            if(m_nProgressText > 0)
+            if(mp_nProgressText > 0)
             {
-              oStrPercent = "(" + oStrPercent + ")";
+              l_oStrPercent = "(" + l_oStrPercent + ")";
             }else{}
 
-            oStrPercent = " " + oStrPercent;
-            nLenPercent = oDC.GetTextExtent(oStrPercent).cx; // Length of Percent
+            l_oStrPercent = " " + l_oStrPercent;
+            l_nLenPercent = l_oDC.GetTextExtent(l_oStrPercent).cx; // Length of Percent
 
-            if(nProgressText >= cSPT_TIMED)
+            if(l_nProgressText >= cSPT_TIMED)
             {
 // CB.... Get the length of the cSPT_TIMED message
-              GetTimed(&oStrTimed);
-              nLenTimed = oDC.GetTextExtent(oStrTimed).cx; // Length of Timed
+              _GetTimed(&l_oStrTimed);
+              l_nLenTimed = l_oDC.GetTextExtent(l_oStrTimed).cx; // Length of Timed
             }else{}
           }else{}
 
 // CC.... Get the length of the text to display
-          oStrMessage = m_oStrMessage;
-          nLenMessage = oDC.GetTextExtent(oStrMessage).cx; // Length of Message
-          nLenMargin  = oDC.GetTextExtent(" ").cx << 1; // Text margin
+          l_oStrMessage = mp_oStrMessage;
+          l_nLenMessage = l_oDC.GetTextExtent(l_oStrMessage).cx; // Length of Message
+          l_nLenMargin  = l_oDC.GetTextExtent(" ").cx << 1; // Text margin
 
 // D..... Compact the text in the remaining space
           // Dompact the text
-          switch(nProgressText)
+          switch(l_nProgressText)
           {
             case cSPT_NONE :
 // DA.... Compact the text according to just its length
-              nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin);
+              l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin);
               break;
             case cSPT_PERCENT :
 // DB.... Compact the text according to its length minus the length of the cSPT_PERCENT message
-              nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin + nLenPercent);
+              l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin + l_nLenPercent);
               break;
             case cSPT_TIMED :
 // DC.... Compact the text according to its length minus the length of the cSPT_TIMED message
-              nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin + nLenTimed);
+              l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin + l_nLenTimed);
               break;
             case cSPT_AUTOSIZE :
 // DD.... Compact the text according to the most usable remaining place between the text and the progress bar
 // DDA... Try to compact the text with the cSPT_TIMED message at first
-              nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin + nLenTimed);
-              if(
-                     (nLenCompact != 0)
-                  && (nLenCompact != oStrMessage.GetLength())
-                )
+              l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin + l_nLenTimed);
+              if
+              (
+                   (l_nLenCompact != 0)
+                && (l_nLenCompact != l_oStrMessage.GetLength())
+              )
               { // If the message was compacted, try with Percent
 // DDB... Reset the text
-                oStrMessage = m_oStrMessage; // Restore the message
+                l_oStrMessage = mp_oStrMessage; // Restore the message
 
 // DDC... Calculate the length of the three dots that will be displayed after the cSPT_PERCENT message
                 // In case of Timed wrapping, use Percent instead, but add "..." to show that the Timed information was wrapped
-                oStrPercent += "...";
-                nLenPercent = oDC.GetTextExtent(oStrPercent).cx; // Length of Percent
+                l_oStrPercent += "...";
+                l_nLenPercent = l_oDC.GetTextExtent(l_oStrPercent).cx; // Length of Percent
 
 // DDD... Compact the text according to its length minus the length of the cSPT_PERCENT message and the added three dots
                 // Dompact the Percent + "..." information
-                nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin + nLenPercent);
+                l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin + l_nLenPercent);
 // DDE... Indicate the message used is cRTP_PERCENT
-                nLenBlock |= cRTP_PERCENT;
+                l_nLenBlock |= cRTP_PERCENT;
               }
               else
               { // There was enough place to add the Timed information
 // DDF... Indicate the message used is cSPT_TIMED
-                nLenBlock |= cRTP_TIMED;
+                l_nLenBlock |= cRTP_TIMED;
               }
               break;
             default :
 // DE.... Compact the text according to just its length
-              nLenCompact = CompactText(&oStrMessage, &oDC, nLenText, nLenMargin);
+              l_nLenCompact = _CompactText(&l_oStrMessage, &l_oDC, l_nLenText, l_nLenMargin);
+              break;
           }
 
 #ifdef dCSP_DIALOG_PROGRESS
-          if(m_poWndProgress == NULL)
+          if(mp_poWndProgress == NULL)
           {
 #endif // dCSP_DIALOG_PROGRESS
             // Block the text wrapping if there is nothing more to wrap
-            if(
-                   (nLenCompact < 0)
-                || (
-                        (oStrMessage.GetLength() <= 4)
-                     && (oStrMessage.Right(3) == "...")
-                   )
-              )
+            if
+            (
+                 (l_nLenCompact < 0)
+              || (
+                      (l_oStrMessage.GetLength() <= 4)
+                   && (l_oStrMessage.Right(3) == "...")
+                 )
+            )
             {
 // DF.... Indicate the text is completely compacted, 
-              nLenBlock |= cRTP_BLOCK;
+              l_nLenBlock |= cRTP_BLOCK;
             }else{}
 
-            if(oStrMessage == "")
+            if(l_oStrMessage == "")
             {
 // DG.... Indicate that there is no text, but there might be a message
-              nLenBlock |= cRTP_NOTEXT;
+              l_nLenBlock |= cRTP_NOTEXT;
             }else{}
 #ifdef dCSP_DIALOG_PROGRESS
           }else{}
@@ -3383,28 +3523,28 @@ BOOL CSkinProgress::RefreshPanes
 
 // E..... Create the complete information message with the user text and the completion report
           // Add the information
-          switch(nProgressText)
+          switch(l_nProgressText)
           {
             case cSPT_NONE :
               break;
             case cSPT_PERCENT :
 // EA.... Add the cSPT_PERCENT message
-              oStrMessage += oStrPercent;
+              l_oStrMessage += l_oStrPercent;
               break;
             case cSPT_TIMED :
 // EB.... Add the cSPT_TIMED message
-              oStrMessage += oStrTimed;
+              l_oStrMessage += l_oStrTimed;
               break;
             case cSPT_AUTOSIZE :
-              if((nLenBlock & cRTP_PERCENT) != 0)
+              if((l_nLenBlock & cRTP_PERCENT) != 0)
               { // If the message was compacted, try with Percent
 // EC.... Add the cSPT_PERCENT message
-                oStrMessage += oStrPercent;
+                l_oStrMessage += l_oStrPercent;
               }
               else
               { // There was enough place to add the Timed information
 // ED.... Add the cSPT_TIMED message
-                oStrMessage += oStrTimed;
+                l_oStrMessage += l_oStrTimed;
               }
               break;
             default :
@@ -3412,64 +3552,65 @@ BOOL CSkinProgress::RefreshPanes
           }
 
 // EE.... Scrub the text to delete trailing characters
-          oStrMessage.TrimLeft();
+          l_oStrMessage.TrimLeft();
 
 #ifdef dCSP_DIALOG_PROGRESS
-          if(m_poWndProgress == NULL)
+          if(mp_poWndProgress == NULL)
           {
 #endif // dCSP_DIALOG_PROGRESS
 // F..... Modify the progress bar size according of its size
-            if(m_nPane == 0)
+            if(mp_nPane == 0)
             { // If the text pane is shared with the progress bar, calculate how much space the text takes up to
-              nLenMessage = oDC.GetTextExtent(oStrMessage).cx; // Length of the compacted Message
+              l_nLenMessage = l_oDC.GetTextExtent(l_oStrMessage).cx; // Length of the compacted Message
 
-              if(
-                     (
-                          (
-                              (nLenMessage + nLenMargin) // Lenght of Message + Margin
-                            > (nLenPane)                 // Lenght of remaining space for text
-                          )
-                       && (
-                               (m_nSize <= 0) // Resize of the progress bar if the text is longer, also used for m_nSize == 0
-                            || (
-                                    (nLenMessage > 0)
-                                 && ((nLenBlock & cRTP_NOTEXT) != 0)
-                               )
-                          )
-                     )
-                  || ((nLenBlock & cRTP_BLOCK) != 0) // Avoid paning if the text is wrapped to the max (when only "...'+information remains)
-                )
+              if
+              (
+                   (
+                        (
+                            (l_nLenMessage + l_nLenMargin) // Lenght of Message + Margin
+                          > (l_nLenPane)                 // Lenght of remaining space for text
+                        )
+                     && (
+                             (mp_nSize <= 0) // Resize of the progress bar if the text is longer, also used for mp_nSize == 0
+                          || (
+                                  (l_nLenMessage > 0)
+                               && ((l_nLenBlock & cRTP_NOTEXT) != 0)
+                             )
+                        )
+                   )
+                || ((l_nLenBlock & cRTP_BLOCK) != 0) // Avoid paning if the text is wrapped to the max (when only "...'+information remains)
+              )
               { // *IF* the packed text is larger than the space left by the resized progress bar *AND* the resizing of the progress bar is allowed *OR* the wrapping is blocked
 // FA.... Get the length of the complete text plus its margin
-                nLenPane = nLenMessage;
+                l_nLenPane = l_nLenMessage;
 
-                if(nLenMessage > 0)
+                if(l_nLenMessage > 0)
                 {
-                  nLenPane += nLenMargin;
+                  l_nLenPane += l_nLenMargin;
                 }else{}
               }else{}
 
-              if(nLenPane > oRectText.Width())
+              if(l_nLenPane > l_oRectText.Width())
               { // Make sure the length will stay positive
 // FB.... Get the maximum length of the text pane
-                nLenPane = oRectText.Width();
+                l_nLenPane = l_oRectText.Width();
               }else{}
 
-              if(nLenPane < 2)
+              if(l_nLenPane < 2)
               {
-                nLenPane = 2;
+                l_nLenPane = 2;
               }else{}
 
 // FC.... Set the new progress bar rectangle
               // This is the pane to display
-              oRectPane = oRectText;
+              l_oRectPane = l_oRectText;
 
 // FD.... Move the left side of the progress bar to the right of the text
               // Move left edge of the progress bar to the right, to leave some place for the text
-              oRectPane.left = nLenPane;
+              l_oRectPane.left = l_nLenPane;
 
 // FE.... Move the right side of the text to the beginning of the bar
-              oRectText.right = nLenPane;
+              l_oRectText.right = l_nLenPane;
             }else{}
 #ifdef dCSP_DIALOG_PROGRESS
           }else{}
@@ -3477,34 +3618,35 @@ BOOL CSkinProgress::RefreshPanes
         }else{}
 
 // FF.... Make sure the previous text is erased, so display at least a space character
-        if(oStrMessage == "")
+        if(l_oStrMessage == "")
         {
-          oStrMessage = " "; // If no text, force the pane to be cleared
+          l_oStrMessage = " "; // If no text, force the pane to be cleared
         }else{}
 
         // Release DC
-        oDC.SelectObject(poFontOld);
+        l_oDC.SelectObject(l_poFontOld);
       }else{}
 
       if(IsWindowVisible())
       {
 // G..... Refresh the progress bar
-        if(
-               (m_oRectPane != oRectPane)
-            && ( // Avoid pane disclosure, so that you can reopen the window and the pane won't stay closed
-                    (oRectPane.Width()  > 2)
-                 && (oRectPane.Height() > 2)
-               )
-          )
+        if
+        (
+             (mp_oRectPane != l_oRectPane)
+          && ( // Avoid pane disclosure, so that you can reopen the window and the pane won't stay closed
+                  (l_oRectPane.Width()  > 2)
+               && (l_oRectPane.Height() > 2)
+             )
+        )
         {
 // GA.... Move the progress bar
-          m_oRectPane = oRectPane; // The new progress rectangle
-          MoveWindow(&oRectPane);
+          mp_oRectPane = l_oRectPane; // The new progress rectangle
+          MoveWindow(&l_oRectPane);
           Invalidate(); // Display the progress bar on its new position
         }
         else
         {
-          if(UpdateProgress())
+          if(_UpdateProgress())
           {
 // GB.... Display the modified progress bar
             Invalidate(); // Display the changes
@@ -3512,50 +3654,50 @@ BOOL CSkinProgress::RefreshPanes
         }
       }else{}
 
-      if(poTextCWnd != NULL)
+      if(l_poTextCWnd != NULL)
       {
-        if(m_oStrPrevMessage != oStrMessage)
+        if(mp_oStrPrevMessage != l_oStrMessage)
         { // If the new message has changed from the previous, set it
 // H..... Display the complete information message
 #ifdef dCSP_DIALOG_PROGRESS
-          if(m_poWndProgress == NULL)
+          if(mp_poWndProgress == NULL)
           {
 #endif // dCSP_DIALOG_PROGRESS
 // HA.... Text in pane 0 of the status bar
-            poStatusBar->SetPaneText(0, oStrMessage); // Force text in pane 0
-            m_oStrPrevMessage = oStrMessage;
+            l_poStatusBar->SetPaneText(0, l_oStrMessage); // Force text in pane 0
+            mp_oStrPrevMessage = l_oStrMessage;
 #ifdef dCSP_DIALOG_PROGRESS
           }
           else
           {
-            if(m_poWndMessage != NULL)
+            if(mp_poWndMessage != NULL)
             {
 // HB.... Text in the CWnd text pane
-              m_poWndMessage->SetWindowText(oStrMessage);
-              m_oStrPrevMessage = oStrMessage;
+              mp_poWndMessage->SetWindowText(l_oStrMessage);
+              mp_oStrPrevMessage = l_oStrMessage;
             }else{}
           }
 #endif // dCSP_DIALOG_PROGRESS
         }else{}
       }else{}
 
-      return true;
+      return TRUE;
     }
     else
     {
-      return false;
+      return FALSE;
     }
   }
   else
   {
-    return false;
+    return FALSE;
   }
 }
 
 // *** DATA PROCESS ***
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : CompactText                                                */
+/* Name          : _CompactText                                               */
 /* Role          : None                                                       */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
@@ -3578,7 +3720,7 @@ BOOL CSkinProgress::RefreshPanes
 /*                 E - Compact the string                                     */
 /*                 F - Add the three dots at the end of the string            */
 /*----------------------------------------------------------------------------*/
-/* PROC CompactText                                                           */
+/* PROC _CompactText                                                          */
 /*                                                                            */
 /* [IF a string is provided to process]                                       */
 /* : [IF no DC specified]                                                     */
@@ -3599,18 +3741,17 @@ BOOL CSkinProgress::RefreshPanes
 /*----------------------------------------------------------------------------*/
 /* Quite easy and fun to use... No trailing blank characters !                */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-int CSkinProgress::CompactText
-(
-  CString* io_poString, 
-  CDC*     i_poDC,
-  int      i_nMaxWidth,
-  int      i_nAddWidth
+int CSkinProgress::_CompactText
+( CString* io_poString
+, CDC*     i_poDC
+, int      i_nMaxWidth
+, int      i_nAddWidth
 )
 {
-  int     nLenString;
-  int     nLenDots;
-  int     nCountChar;
-  TCHAR   nFirstChar;
+  int     l_nLenString;
+  int     l_nLenDots;
+  int     l_nCountChar;
+  TCHAR   l_nFirstChar;
   
   // Init
 
@@ -3619,66 +3760,76 @@ int CSkinProgress::CompactText
     if(i_poDC == NULL)
     { // If no target device context provided, use the current one
 // A..... Get the current DC
-      CClientDC oDC(this);
-      i_poDC = &oDC;
+      CClientDC l_oDC(this);
+      i_poDC = &l_oDC;
     }else{}
 
-    nLenString = io_poString->GetLength();
+    l_nLenString = io_poString->GetLength();
     if(io_poString->Right(3) == "...")
     {
 // B..... Remove any ending dots
-      nLenString  -= 3;
-      *io_poString = io_poString->Left(nLenString);
+      l_nLenString -= 3;
+      *io_poString  = io_poString->Left(l_nLenString);
     }else{}
 
   // Process + Return
 
 // C..... Verify there is something to do
-    if(
-           (nLenString == 0) // No text
-        || ( // Enough space for the unmodified text and the margin
-                (i_poDC->GetTextExtent(*io_poString, nLenString).cx + i_nAddWidth)
-             <= i_nMaxWidth
-           )
-      )
+    if
+    (
+         (l_nLenString == 0) // No text
+      || ( // Enough space for the unmodified text and the margin
+              (i_poDC->GetTextExtent(*io_poString, l_nLenString).cx + i_nAddWidth)
+           <= i_nMaxWidth
+         )
+    )
     {
       return 0;
     }
     else
     {
 // D..... Check if the three doted first character is longer than the whole string (VERY few characters only)
-      nFirstChar = io_poString->GetAt(0);
-      nLenDots   = i_poDC->GetTextExtent(anThreeDots, sizeof(anThreeDots)).cx;
-      if(
-             i_poDC->GetTextExtent(*io_poString, nLenString).cx
-          <= (i_poDC->GetTextExtent(&nFirstChar, sizeof(nFirstChar)).cx + nLenDots)
-        )
+      l_nFirstChar = io_poString->GetAt(0);
+      l_nLenDots   = i_poDC->GetTextExtent(g_anThreeDots, sizeof(g_anThreeDots)).cx;
+      if
+      (
+           i_poDC->GetTextExtent(*io_poString, l_nLenString).cx
+        <= (i_poDC->GetTextExtent(&l_nFirstChar, sizeof(l_nFirstChar)).cx + l_nLenDots)
+      )
       {
-        return (0 - nLenString);
+        return (0 - l_nLenString);
       }
       else
       {
-        nCountChar = 0; 
+        l_nCountChar = 0; 
         
 // E..... Compact the string as long as it does'nt fit in the desired space
-        while( // As long as something remains *AND* the stuff is bigger than the allowed space
-                  (nLenString > 1) // Leading character must remain at least
-               && (
-                      (i_poDC->GetTextExtent(*io_poString, nLenString).cx + (nLenDots >> 1) + i_nAddWidth)
-                    > i_nMaxWidth
-                  )
+        while
+        ( // As long as something remains *AND* the stuff is bigger than the allowed space
+             (l_nLenString > 1) // Leading character must remain at least
+          && (
+                 (
+                     i_poDC->GetTextExtent
+                     ( *io_poString
+                     , l_nLenString
+                     ).cx
+                   + (l_nLenDots >> 1)
+                   + i_nAddWidth
+                 )
+               > i_nMaxWidth
              )
+        )
         {
           *io_poString = io_poString->Left(io_poString->GetLength() - 1); // BEWARE : Modify the original object
           io_poString->TrimRight();               // Kill spaces 
-          nLenString  = io_poString->GetLength(); // Get the real length after trim
-          nCountChar += 1;
+          l_nLenString  = io_poString->GetLength(); // Get the real length after trim
+          l_nCountChar += 1;
         }
 
 // F..... Add the three dots at the end of the string
-        *io_poString += anThreeDots;
+        *io_poString += g_anThreeDots;
 
-        return nCountChar;
+        return l_nCountChar;
       }
     }
   }
@@ -3689,12 +3840,12 @@ int CSkinProgress::CompactText
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : GetTimed                                                   */
+/* Name          : _GetTimed                                                  */
 /* Role          : Get a complete and accurate timed text message             */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : NEVER                                     */
-/*                          true  : ALWAYS                                    */
+/*                   BOOL = FALSE : NEVER                                     */
+/*                          TRUE  : ALWAYS                                    */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   o_poTimed : Timed message                                */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -3710,7 +3861,7 @@ int CSkinProgress::CompactText
 /*                 G - Get the remaining time before end                      */
 /*                 H - Display the expected date and time of the end          */
 /*----------------------------------------------------------------------------*/
-/* PROC GetTimed                                                              */
+/* PROC _GetTimed                                                             */
 /*                                                                            */
 /* A..... Get current date and time                                           */
 /* B..... Add start date in timed message if necessary                        */
@@ -3729,235 +3880,265 @@ int CSkinProgress::CompactText
 /* then the time to finish is quite short so the remaining time decrease very */
 /* fast, instead to readapt to show a 1:1 linear timer till the end.          */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-BOOL CSkinProgress::GetTimed
-(
-  CString* o_poTimed
+BOOL CSkinProgress::_GetTimed
+( CString* o_poTimed
 )
 {
-  CString       oStrTempo;
-  unsigned long nTempo;
+  CString       l_oStrTempo;
+  unsigned long l_nTempo;
 
-  SYSTEMTIME    sCurrentTimeSystem;
-  SYSTEMTIME    sTempoTimeSystem;
-  FILETIME      sTempoTimeFile;
-  LONGLONG      nTempoTimeLongLong;
-  LONGLONG      nDeltaTimeLongLong;
+  SYSTEMTIME    l_sCurrentTimeSystem;
+  SYSTEMTIME    l_sTempoTimeSystem;
+  FILETIME      l_sTempoTimeFile;
+  LONGLONG      l_nTempoTimeLongLong;
+  LONGLONG      l_nDeltaTimeLongLong;
 
   // Init
 
 // A..... Get current date and time
 //  GetSystemTime(&nCurrentTime);
-  GetLocalTime(&sTempoTimeSystem);
-  sCurrentTimeSystem = sTempoTimeSystem; // For the Date of End and Time of End
-  SystemTimeToFileTime(&sTempoTimeSystem, &sTempoTimeFile);
-  nTempoTimeLongLong = (
-                           (
-                                (LONGLONG) // Turns the whole calculation in 64 bits
-                                sTempoTimeFile.dwHighDateTime
-                             << 32
-                           )
-                         | sTempoTimeFile.dwLowDateTime
-                       );
+  GetLocalTime(&l_sTempoTimeSystem);
+  l_sCurrentTimeSystem = l_sTempoTimeSystem; // For the Date of End and Time of End
+  SystemTimeToFileTime(&l_sTempoTimeSystem, &l_sTempoTimeFile);
+
+  l_nTempoTimeLongLong
+  = ( (LONGLONG) // Turns the whole calculation in 64 bits
+      l_sTempoTimeFile.dwHighDateTime
+      << 32
+    )
+  | l_sTempoTimeFile.dwLowDateTime
+  ;
 
   // Process
 
   *o_poTimed = " ";
-  if(m_nProgressText > 0)
+  if(mp_nProgressText > 0)
   {
     *o_poTimed += "(";
   }else{}
 
 // B..... Add start date in timed message if necessary
-  if( // *IF* Date of Start is different from Current Date
-         (sTempoTimeSystem.wDay   != m_sStartTimeSystem.wDay)   // Check what change first, days
-      || (sTempoTimeSystem.wMonth != m_sStartTimeSystem.wMonth)
-      || (sTempoTimeSystem.wYear  != m_sStartTimeSystem.wYear)
-    )
+  if
+  ( // *IF* Date of Start is different from Current Date
+       (l_sTempoTimeSystem.wDay   != mp_sStartTimeSystem.wDay)   // Check what change first, days
+    || (l_sTempoTimeSystem.wMonth != mp_sStartTimeSystem.wMonth)
+    || (l_sTempoTimeSystem.wYear  != mp_sStartTimeSystem.wYear)
+  )
   { // Date of Start
-    oStrTempo.Format
-    (
-      "%04d/%02d/%02d/%02d ",
-      m_sStartTimeSystem.wYear,
-      m_sStartTimeSystem.wMonth,
-      m_sStartTimeSystem.wDay,
-      m_sStartTimeSystem.wDayOfWeek + 1
+    l_oStrTempo.Format
+    ( "%04d/%02d/%02d/%02d "
+    , mp_sStartTimeSystem.wYear
+    , mp_sStartTimeSystem.wMonth
+    , mp_sStartTimeSystem.wDay
+    , mp_sStartTimeSystem.wDayOfWeek + 1
     );
-    *o_poTimed += oStrTempo;
+    *o_poTimed += l_oStrTempo;
   }else{}
 
 // C..... Add start time in timed message
   // Time of Start
-  oStrTempo.Format
-  (
-    "%02d:%02d:%02d - ",
-    m_sStartTimeSystem.wHour,
-    m_sStartTimeSystem.wMinute,
-    m_sStartTimeSystem.wSecond
+  l_oStrTempo.Format
+  ( "%02d:%02d:%02d - "
+  , mp_sStartTimeSystem.wHour
+  , mp_sStartTimeSystem.wMinute
+  , mp_sStartTimeSystem.wSecond
   );
-  *o_poTimed += oStrTempo;
+  *o_poTimed += l_oStrTempo;
 
 // D..... Add the time elapsed from start
   // Calculate time from start
-  nDeltaTimeLongLong            = nTempoTimeLongLong - m_nStartTimeLongLong;
-  nTempoTimeLongLong            = nDeltaTimeLongLong; // Keep nDeltaTimeLongLong safe
-  sTempoTimeFile.dwLowDateTime  = (DWORD) nTempoTimeLongLong;
-  sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) nTempoTimeLongLong >> 32);
-  FileTimeToSystemTime(&sTempoTimeFile, &sTempoTimeSystem);
-  sTempoTimeSystem.wYear       -= 1600; // Starts from 1601, so if 1601 you get year 1
+  l_nDeltaTimeLongLong = l_nTempoTimeLongLong - mp_nStartTimeLongLong;
+  l_nTempoTimeLongLong = l_nDeltaTimeLongLong; // Keep l_nDeltaTimeLongLong safe
+
+  l_sTempoTimeFile.dwLowDateTime  = (DWORD) l_nTempoTimeLongLong;
+  l_sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) l_nTempoTimeLongLong >> 32);
+
+  FileTimeToSystemTime(&l_sTempoTimeFile, &l_sTempoTimeSystem);
+  l_sTempoTimeSystem.wYear -= 1600; // Starts from 1601, so if 1601 you get year 1
 
   // Day from start
-  if(
-         (sTempoTimeSystem.wYear  != 1)
-      || (sTempoTimeSystem.wMonth != 1)
-      || (sTempoTimeSystem.wDay   != 1)
-    )
+  if
+  (
+       (l_sTempoTimeSystem.wYear  != 1)
+    || (l_sTempoTimeSystem.wMonth != 1)
+    || (l_sTempoTimeSystem.wDay   != 1)
+  )
   { // If not the same day, calculate the number of days elapsed from start
-    nTempo = (unsigned long) (
-                                 nTempoTimeLongLong // Already in 64 bits, so the calculation will be done in 64 bits
-                               / (nDeltaTimeLongLong / 864000000000) // Number of days given in 100 nanosecond (0.1us)
-                             );
+    l_nTempo
+    = (unsigned long)
+      (
+          l_nTempoTimeLongLong // Already in 64 bits, so the calculation will be done in 64 bits
+        / (l_nDeltaTimeLongLong / 864000000000) // Number of days given in 100 nanosecond (0.1us)
+      )
+    ;
 
-    if(nTempo != 0)
+    if(l_nTempo != 0)
     { // If there is some days elapsed
-      oStrTempo.Format("%d:", nTempo);
-      *o_poTimed += oStrTempo;
+      l_oStrTempo.Format
+      ( "%d:"
+      , l_nTempo
+      );
+      *o_poTimed += l_oStrTempo;
     }else{}
   }else{}
 
   // Time from start
-  oStrTempo.Format
-  (
-    "%02d:%02d:%02d - ",
-    sTempoTimeSystem.wHour,
-    sTempoTimeSystem.wMinute,
-    sTempoTimeSystem.wSecond
+  l_oStrTempo.Format
+  ( "%02d:%02d:%02d - "
+  , l_sTempoTimeSystem.wHour
+  , l_sTempoTimeSystem.wMinute
+  , l_sTempoTimeSystem.wSecond
   );
-  *o_poTimed += oStrTempo;
+  *o_poTimed += l_oStrTempo;
 
 // E..... Add the current progress completion status
   // Elapsed percent
+  l_nTempo
+  = (int)
+  ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
+    ( (LONGLONG) // Turns the whole calculation in 64 bits
 #ifndef dCSP_SLIDERBAR_METHOD
-  nTempo = (int) ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
-                     (
-                         (LONGLONG) // Turns the whole calculation in 64 bits
-                         (m_nRight - m_nLower)
-                       * 25600
-                     )
-                   / (m_nUpper - m_nLower)
-                 );
+      (mp_nRight - mp_nLower)
 #else
-  nTempo = (int) ( // 100% *256 to keep a pseudo 8-bits fixed point value (0.00390625 - 1/256 - resolution)
-                     (
-                         (LONGLONG) // Turns the whole calculation in 64 bits
-                         (m_nRight -  m_nLeft)
-                       * 25600
-                     )
-                   / (m_nUpper - m_nLower)
-                 );
+      (mp_nRight -  mp_nLeft)
 #endif // dCSP_SLIDERBAR_METHOD
-  oStrTempo.Format("%d%% / ", nTempo >> 8); // '>> 8' == '/ 256'
-  *o_poTimed += oStrTempo;
+      * 25600
+    )
+    / (mp_nUpper - mp_nLower)
+  );
+
+  l_oStrTempo.Format
+  ( "%d%% / "
+  , l_nTempo >> 8 // '>> 8' == '/ 256'
+  );
+  *o_poTimed += l_oStrTempo;
 
 // F..... Add the remaining progress completion
   // Remaining percent
-  oStrTempo.Format("%d%% - ", 100 - (nTempo >> 8));
-  *o_poTimed += oStrTempo;
+  l_oStrTempo.Format
+  ( "%d%% - "
+  , 100 - (l_nTempo >> 8)
+  );
+  *o_poTimed += l_oStrTempo;
 
 // G..... Get the remaining time before end
   // Remaining time
-  if(nTempo == 0)
+  if(l_nTempo == 0)
   { // Avoid zero divide
-    nTempoTimeLongLong = 0; // No more time to wait
+    l_nTempoTimeLongLong = 0; // No more time to wait
   }
   else
   {
-    nTempoTimeLongLong = ((nDeltaTimeLongLong * 25600) / nTempo) - nDeltaTimeLongLong; // The remaining time, 100% - Elasped (100% = Elapsed / Percent)
+    l_nTempoTimeLongLong
+    = (
+          (l_nDeltaTimeLongLong * 25600)
+        / l_nTempo
+      )
+    - l_nDeltaTimeLongLong
+    ; // The remaining time, 100% - Elasped (100% = Elapsed / Percent)
   }
-  sTempoTimeFile.dwLowDateTime  = (DWORD) nTempoTimeLongLong;
-  sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) nTempoTimeLongLong >> 32);
-  FileTimeToSystemTime(&sTempoTimeFile, &sTempoTimeSystem);
-  sTempoTimeSystem.wYear       -= 1600;
+
+  l_sTempoTimeFile.dwLowDateTime  = (DWORD) l_nTempoTimeLongLong;
+  l_sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) l_nTempoTimeLongLong >> 32);
+
+  FileTimeToSystemTime(&l_sTempoTimeFile, &l_sTempoTimeSystem);
+  l_sTempoTimeSystem.wYear       -= 1600;
 
   // Day to end
-  if(
-         (sTempoTimeSystem.wDay   != 1) // Check what change first, days
-      || (sTempoTimeSystem.wMonth != 1)
-      || (sTempoTimeSystem.wYear  != 1)
-    )
+  if
+  (
+       (l_sTempoTimeSystem.wDay   != 1) // Check what change first, days
+    || (l_sTempoTimeSystem.wMonth != 1)
+    || (l_sTempoTimeSystem.wYear  != 1)
+  )
   { // If not the same day, calculate the number of days elapsed from start
-    nTempo = (unsigned long) (nDeltaTimeLongLong / 864000000000); // Number of days given in 100 nanosecond (0.1us)
+    l_nTempo
+    = (unsigned long)
+      (
+          l_nDeltaTimeLongLong
+        / 864000000000 // Number of days given in 100 nanosecond (0.1us)
+      )
+    ;
 
-    if(nTempo != 0)
+    if(l_nTempo != 0)
     { // If there is some days elapsed
-      oStrTempo.Format("%d:", nTempo);
-      *o_poTimed += oStrTempo;
+      l_oStrTempo.Format("%d:", l_nTempo);
+      *o_poTimed += l_oStrTempo;
     }else{}
   }else{}
 
   // Time to end
-  oStrTempo.Format("%02d:%02d:%02d - ", sTempoTimeSystem.wHour, sTempoTimeSystem.wMinute, sTempoTimeSystem.wSecond);
-  *o_poTimed += oStrTempo;
+  l_oStrTempo.Format
+  ( "%02d:%02d:%02d - "
+  , l_sTempoTimeSystem.wHour
+  , l_sTempoTimeSystem.wMinute
+  , l_sTempoTimeSystem.wSecond
+  );
+  
+  *o_poTimed += l_oStrTempo;
 
 // H..... Display the expected date and time of the end
   // Date of End
-  if(nTempo == 0)
+  if(l_nTempo == 0)
   { // Avoid zero divide
-    nTempoTimeLongLong = m_nStartTimeLongLong + nDeltaTimeLongLong; // Current time, Delta = Tempo - Start, see above
+    l_nTempoTimeLongLong = mp_nStartTimeLongLong + l_nDeltaTimeLongLong; // Current time, Delta = Tempo - Start, see above
   }
   else
   {
-    nTempoTimeLongLong = m_nStartTimeLongLong + ((nDeltaTimeLongLong * 25600) / nTempo); // Start + 100% (100% = Elapsed / Percent)
+    l_nTempoTimeLongLong = mp_nStartTimeLongLong + ((l_nDeltaTimeLongLong * 25600) / l_nTempo); // Start + 100% (100% = Elapsed / Percent)
   }
-  sTempoTimeFile.dwLowDateTime  = (DWORD) nTempoTimeLongLong;
-  sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) nTempoTimeLongLong >> 32);
-  FileTimeToSystemTime(&sTempoTimeFile, &sTempoTimeSystem);
 
-  if(
-         (sTempoTimeSystem.wYear  != sCurrentTimeSystem.wYear)
-      && (sTempoTimeSystem.wMonth != sCurrentTimeSystem.wMonth)
-      && (sTempoTimeSystem.wDay   != sCurrentTimeSystem.wDay)
-    )
+  l_sTempoTimeFile.dwLowDateTime  = (DWORD) l_nTempoTimeLongLong;
+  l_sTempoTimeFile.dwHighDateTime = (DWORD) ((LONGLONG) l_nTempoTimeLongLong >> 32);
+  FileTimeToSystemTime(&l_sTempoTimeFile, &l_sTempoTimeSystem);
+
+  if
+  (
+       (l_sTempoTimeSystem.wYear  != l_sCurrentTimeSystem.wYear)
+    && (l_sTempoTimeSystem.wMonth != l_sCurrentTimeSystem.wMonth)
+    && (l_sTempoTimeSystem.wDay   != l_sCurrentTimeSystem.wDay)
+  )
   {
-    oStrTempo.Format
-    (
-      "%04d/%02d/%02d/%02d ",
-      sTempoTimeSystem.wYear,
-      sTempoTimeSystem.wMonth,
-      sTempoTimeSystem.wDay,
-      sTempoTimeSystem.wDayOfWeek + 1
+    l_oStrTempo.Format
+    ( "%04d/%02d/%02d/%02d "
+    , l_sTempoTimeSystem.wYear
+    , l_sTempoTimeSystem.wMonth
+    , l_sTempoTimeSystem.wDay
+    , l_sTempoTimeSystem.wDayOfWeek + 1
     );
-    *o_poTimed += oStrTempo;
+
+    *o_poTimed += l_oStrTempo;
   }else{}
 
   // Time of End
-  oStrTempo.Format
-  (
-    "%02d:%02d:%02d",
-    sTempoTimeSystem.wHour,
-    sTempoTimeSystem.wMinute,
-    sTempoTimeSystem.wSecond
+  l_oStrTempo.Format
+  ( "%02d:%02d:%02d"
+  , l_sTempoTimeSystem.wHour
+  , l_sTempoTimeSystem.wMinute
+  , l_sTempoTimeSystem.wSecond
   );
-  *o_poTimed += oStrTempo;
 
-  if(m_nProgressText > 0)
+  *o_poTimed += l_oStrTempo;
+
+  if(mp_nProgressText > 0)
   {
     *o_poTimed += ")";
   }else{}
 
   // Return
 
-  return true;
+  return TRUE;
 }
 
 // *** UPDATE PROCESS ***
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
-/* Name          : UpdateProgress                                             */
+/* Name          : _UpdateProgress                                            */
 /* Role          : None                                                       */
 /* Type          : PROTECTED                                                  */
 /* Interface     : RETURN (direct value)                                      */
-/*                   BOOL = false : The progress bar has not changed          */
-/*                          true  : The display needs to be updated           */
+/*                   BOOL = FALSE : The progress bar has not changed          */
+/*                          TRUE  : The display needs to be updated           */
 /*                 OUTPUT (pointer to value)                                  */
 /*                   o_poRectPaint : Return the progress bar client rect      */
 /*                 INPUT  (pointer to value, direct/default value)            */
@@ -3970,7 +4151,7 @@ BOOL CSkinProgress::GetTimed
 /*                 D - Reverse the left and right element position            */
 /*                 E - On progress bar change, return the need to refresh it  */
 /*----------------------------------------------------------------------------*/
-/* PROC UpdateProgress                                                        */
+/* PROC _UpdateProgress                                                       */
 /*                                                                            */
 /* A..... Get the current progress bar dimension                              */
 /* B..... Set variables for calculation                                       */
@@ -3990,27 +4171,26 @@ BOOL CSkinProgress::GetTimed
 /* E..... On progress bar change, return the need to refresh it               */
 /*----------------------------------------------------------------------------*/
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
-BOOL CSkinProgress::UpdateProgress
-( // Update of the progress bar values
-  CRect* o_poRectPaint // = NULL
+BOOL CSkinProgress::_UpdateProgress
+( CRect* o_poRectPaint // = NULL
 ) 
-{
-  CRect    oRectPaint;
+{ // Update of the progress bar values
+  CRect l_oRectPaint;
 #ifdef dCSP_SLIDERBAR_METHOD
-  int      nCurrentPos; // Pos of the current calculated position
+  int   l_nCurrentPos; // Pos of the current calculated position
 #endif // dCSP_SLIDERBAR_METHOD
-  int      nLenPos;
-  int      nStepPos;
+  int   l_nLenPos;
+  int   l_nStepPos;
 
   // Init
 
   // Init
 
 // A..... Get the current progress bar dimension
-  GetClientRect(&oRectPaint); // the CStatic currently being repaint
+  GetClientRect(&l_oRectPaint); // the CStatic currently being repaint
   if(o_poRectPaint != NULL)
   {
-    *o_poRectPaint = oRectPaint;
+    *o_poRectPaint = l_oRectPaint;
   }else{}
 //  GetParent()->GetClientRect(&rcStatusBar); // For old test purpose, just stay here to recall me the syntax
 //  GetParent()->ClientToScreen(&rcStatusBar);
@@ -4018,97 +4198,101 @@ BOOL CSkinProgress::UpdateProgress
 
 // B...... Set variables for calculation
 #ifdef dCSP_VERTICAL_BAR
-  if(m_bVertical == false)
-  { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-    nLenPos  = oRectPaint.Width();
-    nStepPos = m_nBmpWidth;
-#ifdef dCSP_VERTICAL_BAR
+  if(mp_bVertical == TRUE)
+  { // Vertical bar
+    l_nLenPos  = l_oRectPaint.Height();
+    l_nStepPos = mp_nBmpHeight;
   }
   else
-  { // Vertical bar
-    nLenPos  = oRectPaint.Height();
-    nStepPos = m_nBmpHeight;
-  }
 #endif // dCSP_VERTICAL_BAR
+  { // Horizontal bar
+    l_nLenPos  = l_oRectPaint.Width();
+    l_nStepPos = mp_nBmpWidth;
+  }
 
   // Process
 
-  // m_nEndAff ----------------------------------------------------,
-  // m_nRightAff ----------------------------,                     |
-  // m_nLeftAff ---------,                   | m_nBmpWidth --,-,   |
-  //                     |<------ bar ------>|               | |   |
+  // mp_nEndAff ---------------------------------------------------,
+  // mp_nRightAff ----------------------------,                    |
+  // mp_nLeftAff ---------,                   | mp_nBmpWidth --,-, |
+  //                      |<------ bar ------>|                | | |
   // ProgressBar = [ : : :(:=:=:=:=:=:=:=:=:=:): : : : : : : : : : : ]
   //               | |                                           | |
-  //               | '- 0% --------- m_nRightAff --------- 100% -+-'
-  //               '- 0% --------- m_nLeftAff ------------ 100% -'
+  //               | '- 0% --------- mp_nRightAff -------- 100% -+-'
+  //               '- 0% --------- mp_nLeftAff ----------- 100% -'
 
 // C..... Calculate the elements' position in pixel
 // CA.... Get the position of the end of the progress bar
-  m_nEndAff   = nLenPos - nStepPos; // Position of the cSPB_RIGHT element
+  mp_nEndAff = l_nLenPos - l_nStepPos; // Position of the cSPB_RIGHT element
 
 // CB.... Get the position of the right end of the progress bar
-  m_nRightAff = (int) ( // Position of the cSPB_RIGHT element
-                          (
-                              (LONGLONG) // Turns the whole calculation in 64 bits
-                              (m_nRight - m_nLower)
-                            * (nLenPos  - (nStepPos << 1))
-                          )
-                        / (m_nUpper - m_nLower)
-                      ) + nStepPos;
+  mp_nRightAff
+  = (int)
+    ( // Position of the cSPB_RIGHT element
+      ( (LONGLONG) // Turns the whole calculation in 64 bits
+        (mp_nRight - mp_nLower)
+        * (l_nLenPos  - (l_nStepPos << 1))
+      )
+      / (mp_nUpper - mp_nLower)
+    )
+  + l_nStepPos
+  ;
 
 #ifdef dCSP_SLIDERBAR_METHOD
 // CC.... Get the position of the left end of the progress bar
-  m_nLeftAff  = (int) ( // Position of the cSPB_LEFT element
-                          (
-                              (LONGLONG) // Turns the whole calculation in 64 bits
-                              (m_nLeft - m_nLower)
-                            * (nLenPos - (nStepPos << 1)) 
-                          )
-                        / (m_nUpper - m_nLower)
-                      );
+  mp_nLeftAff
+  = (int)
+    ( // Position of the cSPB_LEFT element
+      ( (LONGLONG) // Turns the whole calculation in 64 bits
+        (mp_nLeft - mp_nLower)
+        * (l_nLenPos - (l_nStepPos << 1)) 
+      )
+      / (mp_nUpper - mp_nLower)
+    )
+  ;
 #endif // dCSP_SLIDERBAR_METHOD
 
-  if(m_nRightAff > m_nEndAff)
+  if(mp_nRightAff > mp_nEndAff)
   { // Cannot be be bigger than the bar itselves
 // CD.... Reset the length of the progress bar to its maximum size
-    m_nRightAff = m_nEndAff;
+    mp_nRightAff = mp_nEndAff;
   }else{}
 
 #ifdef dCSP_SLIDERBAR_METHOD
-  if(m_nLeftAff > (m_nRightAff - nStepPos))
+  if(mp_nLeftAff > (mp_nRightAff - l_nStepPos))
   { // Cannot be be bigger than the bar itselves
 // CE.... Set the start before the end
-    m_nLeftAff = m_nRightAff - nStepPos;
+    mp_nLeftAff = mp_nRightAff - l_nStepPos;
   }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // D..... Reverse the left and right elements position
 #ifdef dCSP_SLIDERBAR_METHOD
-  if(m_bReverse != false)
+  if(mp_bReverse != FALSE)
   { // If reversing the display, just invert the positions in dCSP_SLIDERBAR_METHOD mode, TRICKY ISN'T IT !
-    nCurrentPos = nLenPos - m_nRightAff - nStepPos; // Will become m_nLeftAff
-    m_nRightAff = nLenPos - m_nLeftAff  - nStepPos; // m_nLeftAff  becomes m_nRightAff
-    m_nLeftAff  = nCurrentPos;                      // m_nRightAff becomes m_nLeftAff
+    l_nCurrentPos = l_nLenPos - mp_nRightAff - l_nStepPos; // Will become mp_nLeftAff
+    mp_nRightAff  = l_nLenPos - mp_nLeftAff  - l_nStepPos; // mp_nLeftAff  becomes mp_nRightAff
+    mp_nLeftAff   = l_nCurrentPos;                         // mp_nRightAff becomes mp_nLeftAff
   }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
   // Return
 
 // E..... On progress bar change, return the need to refresh it
-  if(
-         (m_nPrevEndAff   != m_nEndAff)
-      || (m_nPrevRightAff != m_nRightAff)
+  if
+  (
+       (mp_nPrevEndAff   != mp_nEndAff)
+    || (mp_nPrevRightAff != mp_nRightAff)
 #ifdef dCSP_SLIDERBAR_METHOD
-      || (m_nPrevLeftAff  != m_nLeftAff)
+    || (mp_nPrevLeftAff  != mp_nLeftAff)
 #endif // dCSP_SLIDERBAR_METHOD
-    )
+  )
   {
-    return true;
+    return TRUE;
   }
   else
   {
-    return false;
+    return FALSE;
   }
 }
 
@@ -4141,16 +4325,15 @@ BOOL CSkinProgress::UpdateProgress
 /* the [RefreshPanes] function when the status bar is asked to be erased.     */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 BOOL CSkinProgress::OnEraseBkgnd
-(
-  CDC* i_poDC
+( CDC* i_poDC
 )
 {
-  BOOL bResult;
+  BOOL l_bResult;
 
   // Init
 
 // A..... Erase the background
-  bResult = CStatic::OnEraseBkgnd(i_poDC);
+  l_bResult = CStatic::OnEraseBkgnd(i_poDC);
 
   // Process
 
@@ -4159,7 +4342,7 @@ BOOL CSkinProgress::OnEraseBkgnd
 
   // Return
 
-  return bResult;
+  return l_bResult;
 }
 
 BEGIN_MESSAGE_MAP(CSkinProgress, CStatic)
@@ -4277,17 +4460,17 @@ END_MESSAGE_MAP()
 /* progress bars works. Hope there is enough comments for this purpose ;p     */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 void CSkinProgress::OnPaint
-( // On redraw event
+(
 ) 
-{
-	CPaintDC oDC(this);   // Device context for painting - Do not call CStatic::OnPaint() for painting messages
+{ // On redraw event
+	CPaintDC l_oDC(this);   // Device context for painting - Do not call CStatic::OnPaint() for painting messages
 
-  CDC      oDcProgress; // CompatibleDC
-  CBitmap* poOldBitmap; // oDC's previous bitmap
+  CDC      l_oDcProgress; // CompatibleDC
+  CBitmap* l_poOldBitmap; // l_oDC's previous bitmap
 
-  CRect    oRectPaint;
-  int      nCurrentPos; // Pos of the current calculated position
-  int      nStepPos;
+  CRect    l_oRectPaint;
+  int      l_nCurrentPos; // Pos of the current calculated position
+  int      l_nStepPos;
 
 //  LPPAINTSTRUCT sPaintStruct;
 
@@ -4296,352 +4479,505 @@ void CSkinProgress::OnPaint
   // Process
 
 // A..... Update the progress bar elements position and get the progress bar dimension
-  UpdateProgress(&oRectPaint); // the CStatic currently being repaint
+  _UpdateProgress(&l_oRectPaint); // the CStatic currently being repaint
 
 //  BeginPaint(sPaintStruct);
 
 // B...... Set variables for calculation
 #ifdef dCSP_VERTICAL_BAR
-  if(m_bVertical == false)
-  { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-    nStepPos = m_nBmpWidth;
-#ifdef dCSP_VERTICAL_BAR
+  if(mp_bVertical == TRUE)
+  { // Vertical bar
+    l_nStepPos = mp_nBmpHeight;
   }
   else
-  { // Vertical bar
-    nStepPos = m_nBmpHeight;
-  }
 #endif // dCSP_VERTICAL_BAR
+  { // Horizontal bar
+    l_nStepPos = mp_nBmpWidth;
+  }
 
 // C..... Draw the progress bar
-  if( // If the SIZE (don't mind the position) of the ProgressBar has changed
-         (oRectPaint.Width()  != m_oRectPaint.Width())
-      || (oRectPaint.Height() != m_oRectPaint.Height())
-    )
+  if
+  ( // If the SIZE (don't mind the position) of the ProgressBar has changed
+       (l_oRectPaint.Width()  != mp_oRectPaint.Width())
+    || (l_oRectPaint.Height() != mp_oRectPaint.Height())
+  )
   { // If the progress bar size has changed
 // CA.... Redraw the complete bar from scratch
-    if(m_poProgressBmp != NULL)
+    if(mp_poProgressBmp != NULL)
     { // If the ProgressBitmap already exists, delete it and create a new one with the new dimension of the pane
 // CAA... Delete the previous progress bar bitmap
-      delete m_poProgressBmp;
+      delete mp_poProgressBmp;
     }else{}
 
 // CAB... Create the new progress bar bitmap with the new dimension
-    m_poProgressBmp = new CBitmap;
-    m_poProgressBmp->CreateCompatibleBitmap(&oDC, oRectPaint.Width(), oRectPaint.Height()); // *ALWAYS* use '&oDC', *NEVER* '&oDcProgress' otherwise you'll get a monochrom image
+    mp_poProgressBmp = new CBitmap;
+    mp_poProgressBmp->CreateCompatibleBitmap
+    ( &l_oDC // *ALWAYS* use '&l_oDC', *NEVER* '&l_oDcProgress' otherwise you'll get a monochrom image
+    , l_oRectPaint.Width()
+    , l_oRectPaint.Height()
+    );
   }else{}
 
 // CB.... Select the DC on the progress bar bitmap
-  oDcProgress.CreateCompatibleDC(&oDC);
-  poOldBitmap = oDcProgress.SelectObject(m_poProgressBmp);
+  l_oDcProgress.CreateCompatibleDC(&l_oDC);
+  l_poOldBitmap = l_oDcProgress.SelectObject(mp_poProgressBmp);
 
   if( // If the SIZE (don't mind the position) of the ProgressBar has changed
-         (oRectPaint.Width()  != m_oRectPaint.Width())
-      || (oRectPaint.Height() != m_oRectPaint.Height())
+         (l_oRectPaint.Width()  != mp_oRectPaint.Width())
+      || (l_oRectPaint.Height() != mp_oRectPaint.Height())
     )
   { // If the ProgressBar has changed, redraw it completly
 // CC.... Start the complete redraw of the progress bar from the end
     // Background
 // CCA... Draw the background element
 // CCAA.. Draw the background element from the most right position
-    nCurrentPos = m_nEndAff - (m_nEndAff % nStepPos);
-    for(; nCurrentPos > m_nRightAff; nCurrentPos -= nStepPos)
+    for
+    ( l_nCurrentPos = mp_nEndAff - (mp_nEndAff % l_nStepPos)
+    ; l_nCurrentPos > mp_nRightAff
+    ; l_nCurrentPos -= l_nStepPos
+    )
     {
 // CCAB.. Draw the background element until the right end of the bar
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(0, l_nCurrentPos)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(0, nCurrentPos), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+      }
     }
 
 // CCB... Save the previous position of the end of the progress bar
     // Position of the end of the bar
-    m_nPrevRightAff = m_nRightAff;
+    mp_nPrevRightAff = mp_nRightAff;
 
 // CCC... Draw the bar element
     // Bar
 // CCCA.. Reset the drawing position on a base of the image list element's width
-    nCurrentPos -= (nCurrentPos % nStepPos);
+    for
+    ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
 #ifndef dCSP_SLIDERBAR_METHOD
-    for(; nCurrentPos >= nStepPos;   nCurrentPos -= nStepPos) // For m_nLeft-less progress bar routine
+    ; l_nCurrentPos >= l_nStepPos // For mp_nLeft-less progress bar routine
 #else
-    for(; nCurrentPos >= m_nLeftAff; nCurrentPos -= nStepPos)
+    ; l_nCurrentPos >= mp_nLeftAff
 #endif // dCSP_SLIDERBAR_METHOD
+    ;  l_nCurrentPos -= l_nStepPos
+    )
     {
 // CCCB.. Draw the bar element until the left end of the bar
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BAR
+        , CPoint(0, l_nCurrentPos)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(0, nCurrentPos), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BAR
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+      }
     }
 
 #ifdef dCSP_SLIDERBAR_METHOD
     // Position of the beginning of the bar
-    m_nPrevLeftAff = m_nLeftAff;
+    mp_nPrevLeftAff = mp_nLeftAff;
 
     // Background
-    nCurrentPos -= (nCurrentPos % nStepPos);
-    for(; nCurrentPos >= nStepPos; nCurrentPos -= nStepPos)
+    for
+    ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
+    ; l_nCurrentPos >= l_nStepPos
+    ; l_nCurrentPos -= l_nStepPos
+    )
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(0, l_nCurrentPos)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(0, nCurrentPos), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+      }
     }
 #endif // dCSP_SLIDERBAR_METHOD
 
 // CCD... Draw the center element
     // Center
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
+    if(mp_bVertical == TRUE)
+    { // Vertical bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_CENTER
 #ifndef dCSP_SLIDERBAR_METHOD
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(m_nRightAff >> 1, 0), ILD_NORMAL);
+      , CPoint(0, mp_nRightAff >> 1)
 #else
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint((m_nLeftAff + m_nRightAff) >> 1, 0), ILD_NORMAL);
+      , CPoint(0, (mp_nLeftAff + mp_nRightAff) >> 1)
 #endif // dCSP_SLIDERBAR_METHOD
-#ifdef dCSP_VERTICAL_BAR
+      , ILD_NORMAL
+      );
     }
     else
-    { // Vertical bar
-#ifndef dCSP_SLIDERBAR_METHOD
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(0, m_nRightAff >> 1), ILD_NORMAL);
-#else
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(0, (m_nLeftAff + m_nRightAff) >> 1), ILD_NORMAL);
-#endif // dCSP_SLIDERBAR_METHOD
-    }
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_CENTER
+#ifndef dCSP_SLIDERBAR_METHOD
+      , CPoint(mp_nRightAff >> 1, 0)
+#else
+      , CPoint((mp_nLeftAff + mp_nRightAff) >> 1, 0)
+#endif // dCSP_SLIDERBAR_METHOD
+      , ILD_NORMAL
+      );
+    }
 
 // CCE... Draw the before-left element
     // Before
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nLeftAff > nStepPos)
+    if(mp_nLeftAff > l_nStepPos)
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BEFORE, CPoint(m_nLeftAff - m_nBmpWidth, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BEFORE
+        , CPoint(0, mp_nLeftAff - mp_nBmpHeight)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BEFORE, CPoint(0, m_nLeftAff - m_nBmpHeight), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BEFORE
+        , CPoint(mp_nLeftAff - mp_nBmpWidth, 0)
+        , ILD_NORMAL
+        );
+      }
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // CCF... Draw the after-right element
     // After
-    if(m_nRightAff < (m_nEndAff - nStepPos))
+    if(mp_nRightAff < (mp_nEndAff - l_nStepPos))
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_AFTER, CPoint(m_nRightAff + m_nBmpWidth, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_AFTER
+        , CPoint(0, mp_nRightAff + mp_nBmpHeight)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_AFTER, CPoint(0, m_nRightAff + m_nBmpHeight), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_AFTER
+        , CPoint(mp_nRightAff + mp_nBmpWidth, 0)
+        , ILD_NORMAL
+        );
+      }
     }else{}
 
 // CCG... Draw the start element
     // Start
 #ifdef dCSP_SLIDERBAR_METHOD
-    m_oBarImgLst.Draw(&oDcProgress, cSPB_START, CPoint(0, 0), ILD_NORMAL);
+    mp_oBarImgLst.Draw
+    ( &l_oDcProgress
+    , cSPB_START
+    , CPoint(0, 0)
+    , ILD_NORMAL
+    );
 #endif // dCSP_SLIDERBAR_METHOD
 
 // CCH... Draw the end element
     // End
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_END, CPoint(m_nEndAff, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+    if(mp_bVertical == TRUE)
+    { // Vertical bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_END
+      , CPoint(0, mp_nEndAff)
+      , ILD_NORMAL
+      );
     }
     else
-    { // Vertical bar
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_END, CPoint(0, m_nEndAff), ILD_NORMAL);
-    }
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_END
+      , CPoint(mp_nEndAff, 0)
+      , ILD_NORMAL
+      );
+    }
 
 // CCI... Draw the left element of the bar
     // Left
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
+    if(mp_bVertical == TRUE)
+    { // Vertical bar
+      mp_oBarImgLst.Draw // For mp_nLeft-less progress bar routine
+      ( &l_oDcProgress
+      , cSPB_TOP
 #ifndef dCSP_SLIDERBAR_METHOD
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_LEFT, CPoint(0, 0), ILD_NORMAL); // For m_nLeft-less progress bar routine
+      , CPoint(0, 0)
 #else
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_LEFT, CPoint(m_nLeftAff, 0), ILD_NORMAL);
+      , CPoint(0, mp_nLeftAff)
 #endif // dCSP_SLIDERBAR_METHOD
-#ifdef dCSP_VERTICAL_BAR
+      , ILD_NORMAL
+      );
     }
     else
-    { // Vertical bar
-#ifndef dCSP_SLIDERBAR_METHOD
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_TOP, CPoint(0, 0), ILD_NORMAL); // For m_nLeft-less progress bar routine
-#else
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_TOP, CPoint(0, m_nLeftAff), ILD_NORMAL);
-#endif // dCSP_SLIDERBAR_METHOD
-    }
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+      mp_oBarImgLst.Draw // For mp_nLeft-less progress bar routine
+      ( &l_oDcProgress
+      , cSPB_LEFT
+#ifndef dCSP_SLIDERBAR_METHOD
+      , CPoint(0, 0)
+#else
+      , CPoint(mp_nLeftAff, 0)
+#endif // dCSP_SLIDERBAR_METHOD
+      , ILD_NORMAL
+      );
+    }
 
 // CCJ// Car... Draw the right element of the bar
     // Right
 #ifdef dCSP_VERTICAL_BAR
-    if(m_bVertical == false)
-    { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_RIGHT, CPoint(m_nRightAff, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+    if(mp_bVertical == TRUE)
+    { // Vertical bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_BOTTOM
+      , CPoint(0, mp_nRightAff)
+      , ILD_NORMAL
+      );
     }
     else
-    { // Vertical bar
-      m_oBarImgLst.Draw(&oDcProgress, cSPB_BOTTOM, CPoint(0, m_nRightAff), ILD_NORMAL);
-    }
 #endif // dCSP_VERTICAL_BAR
+    { // Horizontal bar
+      mp_oBarImgLst.Draw
+      ( &l_oDcProgress
+      , cSPB_RIGHT
+      , CPoint(mp_nRightAff, 0)
+      , ILD_NORMAL
+      );
+    }
 
-    m_nPrevEndAff = m_nEndAff;
-    m_oRectPaint  = oRectPaint;
+    mp_nPrevEndAff = mp_nEndAff;
+    mp_oRectPaint  = l_oRectPaint;
   }
   else
   {
 // CD.... Modify the moved elements without redrawing the complete progress bar
-    if(m_nPrevRightAff != m_nRightAff)
+    if(mp_nPrevRightAff != mp_nRightAff)
     {
 // CDA... Start to update the progress bar from the previous position
-      nCurrentPos = m_nPrevRightAff;
+      l_nCurrentPos = mp_nPrevRightAff;
 
-      if(m_nRightAff < m_nPrevRightAff)
+      if(mp_nRightAff < mp_nPrevRightAff)
       { // If going backward, draw BACKGROUND and last with RIGHT
 // CDB... Going backward
 // CDBA.. Draw the background element to replace the end of the progress bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+
 // CDBB.. Reset the drawing position on a base of the image list element's width
-        nCurrentPos -= (nCurrentPos % nStepPos);
-        for(; nCurrentPos > m_nRightAff; nCurrentPos -= nStepPos)
+        for
+        ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
+        ; l_nCurrentPos > mp_nRightAff
+        ; l_nCurrentPos -= l_nStepPos
+        )
         {
 // CDBC.. Draw the background element until the right end of the bar
 #ifdef dCSP_VERTICAL_BAR
-          if(m_bVertical == false)
-          { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+          if(mp_bVertical == TRUE)
+          { // Vertical bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BACKGROUND
+            , CPoint(0, l_nCurrentPos)
+            , ILD_NORMAL
+            );
           }
           else
-          { // Vertical bar
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(0, nCurrentPos), ILD_NORMAL);
-          }
 #endif // dCSP_VERTICAL_BAR
-
+          { // Horizontal bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BACKGROUND
+            , CPoint(l_nCurrentPos, 0)
+            , ILD_NORMAL
+            );
+          }
         }
       }
       else
       { // If going forward, draw BAR and last with RIGHT
 // CDC... Going forward
 // CDCA.. Draw the progress bar element to replace the end of the progress bar
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(nCurrentPos, 0), ILD_NORMAL);
+        mp_oBarImgLst.Draw(&l_oDcProgress, cSPB_BAR, CPoint(l_nCurrentPos, 0), ILD_NORMAL);
 // CDCB.. Reset the drawing position on a base of the image list element's width
-        nCurrentPos += nStepPos;
-        nCurrentPos -= (nCurrentPos % nStepPos);
-        for(; nCurrentPos < m_nRightAff; nCurrentPos += nStepPos)
+        
+        l_nCurrentPos += l_nStepPos;
+
+        for
+        ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
+        ; l_nCurrentPos  < mp_nRightAff
+        ; l_nCurrentPos += l_nStepPos
+        )
         {
 // CDCC.. Draw the progress bar element until the right end of the bar
 #ifdef dCSP_VERTICAL_BAR
-          if(m_bVertical == false)
-          { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+          if(mp_bVertical == TRUE)
+          { // Vertical bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BAR
+            , CPoint(0, l_nCurrentPos)
+            , ILD_NORMAL
+            );
           }
           else
-          { // Vertical bar
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(0, nCurrentPos), ILD_NORMAL);
-          }
 #endif // dCSP_VERTICAL_BAR
+          { // Horizontal bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BAR
+            , CPoint(l_nCurrentPos, 0)
+            , ILD_NORMAL
+            );
+          }
         }
       }
     }else{}
 
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nLeftAff!= m_nPrevLeftAff)
+    if(mp_nLeftAff!= mp_nPrevLeftAff)
     {
-      nCurrentPos = m_nPrevLeftAff;
+      l_nCurrentPos = mp_nPrevLeftAff;
 
-      if(m_nLeftAff < m_nPrevLeftAff)
+      if(mp_nLeftAff < mp_nPrevLeftAff)
       { // If going backward, draw BAR and last with LEFT
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(nCurrentPos, 0), ILD_NORMAL);
-        nCurrentPos -= (nCurrentPos % nStepPos);
-        for(; nCurrentPos > m_nLeftAff; nCurrentPos -= nStepPos)
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BAR
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+        
+        for
+        ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
+        ; l_nCurrentPos  > mp_nLeftAff
+        ; l_nCurrentPos -= l_nStepPos
+        )
         {
 #ifdef dCSP_VERTICAL_BAR
-          if(m_bVertical == false)
-          { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+          if(mp_bVertical == TRUE)
+          { // Vertical bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BAR
+            , CPoint(0, l_nCurrentPos)
+            , ILD_NORMAL
+            );
           }
           else
-          { // Vertical bar
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BAR, CPoint(0, nCurrentPos), ILD_NORMAL);
-          }
 #endif // dCSP_VERTICAL_BAR
+          { // Horizontal bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BAR
+            , CPoint(l_nCurrentPos, 0)
+            , ILD_NORMAL
+            );
+          }
         }
       }
       else
       { // If going forward, draw BACKGROUND and last with LEFT
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
-        nCurrentPos += nStepPos;
-        nCurrentPos -= (nCurrentPos % nStepPos);
-        for(; nCurrentPos < m_nLeftAff; nCurrentPos += nStepPos)
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BACKGROUND
+        , CPoint(l_nCurrentPos, 0)
+        , ILD_NORMAL
+        );
+
+        l_nCurrentPos += l_nStepPos;
+        
+        for
+        ( l_nCurrentPos -= (l_nCurrentPos % l_nStepPos)
+        ; l_nCurrentPos  < mp_nLeftAff
+        ; l_nCurrentPos += l_nStepPos
+        )
         {
 #ifdef dCSP_VERTICAL_BAR
-          if(m_bVertical == false)
-          { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(nCurrentPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+          if(mp_bVertical == TRUE)
+          { // Vertical bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BACKGROUND
+            , CPoint(0, l_nCurrentPos)
+            , ILD_NORMAL
+            );
           }
           else
-          { // Vertical bar
-            m_oBarImgLst.Draw(&oDcProgress, cSPB_BACKGROUND, CPoint(0, nCurrentPos), ILD_NORMAL);
-          }
 #endif // dCSP_VERTICAL_BAR
+          { // Horizontal bar
+            mp_oBarImgLst.Draw
+            ( &l_oDcProgress
+            , cSPB_BACKGROUND
+            , CPoint(l_nCurrentPos, 0)
+            , ILD_NORMAL
+            );
+          }
         }
       }
     }else{}
@@ -4649,218 +4985,279 @@ void CSkinProgress::OnPaint
 
 // CDD... Draw the center element
     if(
-           (m_nPrevRightAff != m_nRightAff)
+           (mp_nPrevRightAff != mp_nRightAff)
 #ifdef dCSP_SLIDERBAR_METHOD
-        || (m_nPrevLeftAff  != m_nLeftAff)
+        || (mp_nPrevLeftAff  != mp_nLeftAff)
 #endif // dCSP_SLIDERBAR_METHOD
       )
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_CENTER
 #ifndef dCSP_SLIDERBAR_METHOD
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(m_nRightAff >> 1, 0), ILD_NORMAL);
+        , CPoint(0, mp_nRightAff >> 1)
 #else
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint((m_nLeftAff + m_nRightAff) >> 1, 0), ILD_NORMAL);
+        , CPoint(0, (mp_nLeftAff + mp_nRightAff) >> 1)
 #endif // dCSP_SLIDERBAR_METHOD
-#ifdef dCSP_VERTICAL_BAR
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-#ifndef dCSP_SLIDERBAR_METHOD
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(0, m_nRightAff >> 1), ILD_NORMAL);
-#else
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_CENTER, CPoint(0, (m_nLeftAff + m_nRightAff) >> 1), ILD_NORMAL);
-#endif // dCSP_SLIDERBAR_METHOD
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_CENTER
+#ifndef dCSP_SLIDERBAR_METHOD
+        , CPoint(mp_nRightAff >> 1, 0)
+#else
+        , CPoint((mp_nLeftAff + mp_nRightAff) >> 1, 0)
+#endif // dCSP_SLIDERBAR_METHOD
+        , ILD_NORMAL
+        );
+      }
     }
 
 // CDE... Draw the before-left element
     // Before
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nPrevLeftAff != m_nLeftAff)
+    if(mp_nPrevLeftAff != mp_nLeftAff)
     {
-      if(m_nLeftAff > nStepPos)
+      if(mp_nLeftAff > l_nStepPos)
       {
 #ifdef dCSP_VERTICAL_BAR
-        if(m_bVertical == false)
-        { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_BEFORE, CPoint(m_nLeftAff - nStepPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+        if(mp_bVertical == TRUE)
+        { // Vertical bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_BEFORE
+          , CPoint(0, mp_nLeftAff - l_nStepPos)
+          , ILD_NORMAL
+          );
         }
         else
-        { // Vertical bar
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_BEFORE, CPoint(0, m_nLeftAff - nStepPos), ILD_NORMAL);
-        }
 #endif // dCSP_VERTICAL_BAR
+        { // Horizontal bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_BEFORE
+          , CPoint(mp_nLeftAff - l_nStepPos, 0)
+          , ILD_NORMAL
+          );
+        }
       }else{}
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // CDF... Draw the after-right element
     // After
-    if(m_nRightAff != m_nPrevRightAff)
+    if(mp_nRightAff != mp_nPrevRightAff)
     {
-      if(m_nRightAff < (m_nEndAff - nStepPos))
+      if(mp_nRightAff < (mp_nEndAff - l_nStepPos))
       {
 #ifdef dCSP_VERTICAL_BAR
-        if(m_bVertical == false)
-        { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_AFTER, CPoint(m_nRightAff + nStepPos, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+        if(mp_bVertical == TRUE)
+        { // Vertical bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_AFTER
+          , CPoint(0, mp_nRightAff + l_nStepPos)
+          , ILD_NORMAL
+          );
         }
         else
-        { // Vertical bar
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_AFTER, CPoint(0, m_nRightAff + nStepPos), ILD_NORMAL);
-        }
 #endif // dCSP_VERTICAL_BAR
+        { // Horizontal bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_AFTER
+          , CPoint(mp_nRightAff + l_nStepPos, 0)
+          , ILD_NORMAL
+          );
+        }
       }else{}
     }else{}
 
 // CDG... Draw the start element
     // Start
 #ifdef dCSP_SLIDERBAR_METHOD
-    if(m_nPrevLeftAff  != m_nLeftAff)
+    if(mp_nPrevLeftAff  != mp_nLeftAff)
 #else
-    if(m_nPrevRightAff != m_nRightAff) // In non-<dCSP_SLIDERBAR_METHOD> mode, only the right end can move
+    if(mp_nPrevRightAff != mp_nRightAff) // In non-<dCSP_SLIDERBAR_METHOD> mode, only the right end can move
 #endif // dCSP_SLIDERBAR_METHOD
     {
 #ifdef dCSP_SLIDERBAR_METHOD
-      if(m_nLeftAff  < (nStepPos << 1))
+      if(mp_nLeftAff  < (l_nStepPos << 1))
 #else
-      if(m_nRightAff < (nStepPos << 1)) // In non-<dCSP_SLIDERBAR_METHOD> mode, only the right end can move
+      if(mp_nRightAff < (l_nStepPos << 1)) // In non-<dCSP_SLIDERBAR_METHOD> mode, only the right end can move
 #endif // dCSP_SLIDERBAR_METHOD
       { // If the START element was over-written, refresh it
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_START, CPoint(0, 0), ILD_NORMAL);
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_START
+        , CPoint(0, 0)
+        , ILD_NORMAL
+        );
       }else{}
     }else{}
 
 // CDH... Draw the end element
     // End
-    if(m_nPrevRightAff != m_nRightAff)
+    if(mp_nPrevRightAff != mp_nRightAff)
     {
-      if(m_nRightAff > (m_nEndAff - (nStepPos << 1)))
+      if(mp_nRightAff > (mp_nEndAff - (l_nStepPos << 1)))
       { // If the END element was over-written, refresh it
 #ifdef dCSP_VERTICAL_BAR
-        if(m_bVertical == false)
-        { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_END, CPoint(m_nEndAff, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+        if(mp_bVertical == TRUE)
+        { // Vertical bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_END
+          , CPoint(0, mp_nEndAff)
+          , ILD_NORMAL
+          );
         }
         else
-        { // Vertical bar
-          m_oBarImgLst.Draw(&oDcProgress, cSPB_END, CPoint(0, m_nEndAff), ILD_NORMAL);
-        }
 #endif // dCSP_VERTICAL_BAR
+        { // Horizontal bar
+          mp_oBarImgLst.Draw
+          ( &l_oDcProgress
+          , cSPB_END
+          , CPoint(mp_nEndAff, 0)
+          , ILD_NORMAL
+          );
+        }
       }else{}
     }else{}
 
 // CDI... Draw the left element of the bar
 #ifdef dCSP_SLIDERBAR_METHOD
     if( // In case of slider display, the closeness of the RIGHT element from the LEFT can cause an over-write of the LEFT element with BAR and/or CENTER
-           (m_nPrevLeftAff != m_nLeftAff)
-        || (m_nRightAff < (m_nLeftAff + (nStepPos << 1)))
+           (mp_nPrevLeftAff != mp_nLeftAff)
+        || (
+               mp_nRightAff
+             < (mp_nLeftAff + (l_nStepPos << 1))
+           )
       )
     {
       // Position of the start of the bar
-      m_nPrevLeftAff = m_nLeftAff;
+      mp_nPrevLeftAff = mp_nLeftAff;
 
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        // Left
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_LEFT, CPoint(m_nLeftAff, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_TOP // Top
+        , CPoint(0, mp_nLeftAff)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        // Top
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_TOP, CPoint(0, m_nLeftAff), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_LEFT // Left
+        , CPoint(mp_nLeftAff, 0)
+        , ILD_NORMAL
+        );
+      }
     }else{}
 #else
     // As long as the RIGHT element is too close from the LEFT element, the CENTER element over-writes the LEFT element, thus we have to refresh the LEFT element
-    if(m_nRightAff < (nStepPos << 1))
+    if(mp_nRightAff < (l_nStepPos << 1))
     {
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        // Left
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_LEFT, CPoint(0, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_TOP // Top
+        , CPoint(0, 0)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        // Top
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_TOP, CPoint(0, 0), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_LEFT // Left
+        , CPoint(0, 0)
+        , ILD_NORMAL
+        );
+      }
     }else{}
 #endif // dCSP_SLIDERBAR_METHOD
 
 // CDJ... Draw the right element of the bar
     if( // In case of slider display, the closeness of the LEFT element from the RIGHT can cause an over-write of the RIGHT element with BAR and/or CENTER
-           (m_nPrevRightAff != m_nRightAff)
+           (mp_nPrevRightAff != mp_nRightAff)
 #ifdef dCSP_SLIDERBAR_METHOD
-        || (m_nLeftAff> (m_nRightAff - (nStepPos << 1)))
+        || (
+                mp_nLeftAff
+             > (mp_nRightAff - (l_nStepPos << 1))
+           )
 #endif // dCSP_SLIDERBAR_METHOD
       )
     {
       // Position of the end of the bar
-      m_nPrevRightAff = m_nRightAff;
+      mp_nPrevRightAff = mp_nRightAff;
 
 #ifdef dCSP_VERTICAL_BAR
-      if(m_bVertical == false)
-      { // Horizontal bar
-#endif // dCSP_VERTICAL_BAR
-        // Right
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_RIGHT, CPoint(m_nRightAff, 0), ILD_NORMAL);
-#ifdef dCSP_VERTICAL_BAR
+      if(mp_bVertical == TRUE)
+      { // Vertical bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_BOTTOM // Bottom
+        , CPoint(0, mp_nRightAff)
+        , ILD_NORMAL
+        );
       }
       else
-      { // Vertical bar
-        // Cottom
-        m_oBarImgLst.Draw(&oDcProgress, cSPB_BOTTOM, CPoint(0, m_nRightAff), ILD_NORMAL);
-      }
 #endif // dCSP_VERTICAL_BAR
+      { // Horizontal bar
+        mp_oBarImgLst.Draw
+        ( &l_oDcProgress
+        , cSPB_RIGHT // Right
+        , CPoint(mp_nRightAff, 0)
+        , ILD_NORMAL
+        );
+      }
     }else{}
 
-    if(m_nPrevEndAff != m_nEndAff)
+    if(mp_nPrevEndAff != mp_nEndAff)
     {
-      m_nPrevEndAff = m_nEndAff;
+      mp_nPrevEndAff = mp_nEndAff;
     }else{}
   }
 
 // D..... Display the progress bar
   // Copy the progress bitmap each time the object have to be refreshed
 #ifndef dCSP_DISPLAY_STRETCH
-  oDC.BitBlt(0, 0, oRectPaint.Width(), oRectPaint.Height(), &oDcProgress, 0, 0, SRCCOPY);
+  l_oDC.BitBlt(0, 0, l_oRectPaint.Width(), l_oRectPaint.Height(), &l_oDcProgress, 0, 0, SRCCOPY);
 #else
-  CDC      oDcStretch;   // CompatibleDC
-  CBitmap* poOldStretch; // oDC's previous bitmap
+  CDC      l_oDcStretch;   // CompatibleDC
+  CBitmap* l_poOldStretch; // l_oDC's previous bitmap
   BITMAP   sStretchBmp;
 
-  oDcStretch.CreateCompatibleDC(&oDC);
-	poOldStretch = oDcStretch.SelectObject(m_poStretchBmp);
+  l_oDcStretch.CreateCompatibleDC(&l_oDC);
+	l_poOldStretch = l_oDcStretch.SelectObject(mp_poStretchBmp);
 
-  m_poStretchBmp->GetBitmap(&sStretchBmp);
-  oDC.BitBlt(0, 0, sStretchBmp.bmWidth, sStretchBmp.bmHeight, &oDcStretch, 0, 0, SRCCOPY);
+  mp_poStretchBmp->GetBitmap(&sStretchBmp);
+  l_oDC.BitBlt(0, 0, sStretchBmp.bmWidth, sStretchBmp.bmHeight, &l_oDcStretch, 0, 0, SRCCOPY);
 
-  oDcStretch.SelectObject(poOldStretch);
-  oDcStretch.DeleteDC();
+  l_oDcStretch.SelectObject(l_poOldStretch);
+  l_oDcStretch.DeleteDC();
 #endif // dCSP_DISPLAY_STRETCH
 
   // Release the DC
-  oDcProgress.SelectObject(poOldBitmap);
-  oDcProgress.DeleteDC();
+  l_oDcProgress.SelectObject(l_poOldBitmap);
+  l_oDcProgress.DeleteDC();
 
 //  EndPaint(sPaintStruct);
 }
@@ -4889,13 +5286,15 @@ void CSkinProgress::OnPaint
 /* In normal cases, this is NEVER called                                      */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 void CSkinProgress::OnSizing
-(
-  UINT   fwSide, // Edge of window to be moved
-  LPRECT pRect   // New rectangle
+( UINT   fwSide // Edge of window to be moved
+, LPRECT pRect  // New rectangle
 )
 {
 // A..... Resize the object
-	CStatic::OnSizing(fwSide, pRect);
+	CStatic::OnSizing
+  ( fwSide
+  , pRect
+  );
 
   // Process
 
@@ -4926,14 +5325,17 @@ void CSkinProgress::OnSizing
 /* Just over-ridden, ready to use for various purposes ;)                     */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 void CSkinProgress::OnSize
-(
-  UINT nType, // Type of resizing requested 
-  int  cx,    // Width
-  int  cy     // Height
+( UINT nType // Type of resizing requested 
+, int  cx    // Width
+, int  cy    // Height
 )
 {
 // A..... Transmit the new dimensions
-	CStatic::OnSize(nType, cx, cy);
+	CStatic::OnSize
+  ( nType
+  , cx
+  , cy
+  );
 }
 
 /*--- START FUNCTION HEADER --------------------------------------------------*/
@@ -4961,10 +5363,9 @@ void CSkinProgress::OnSize
 /* per second...                                                              */
 /*--- END FUNCTION HEADER ----------------------------------------------------*/
 void CSkinProgress::OnTimer
-( // On a Timer event
-  UINT nIDEvent
+( UINT nIDEvent
 )
-{
+{ // On a Timer event
   if(nIDEvent == (UINT) this) // Use object's unique address as timer identifier
   {
 // A..... Refresh the text and the progress bar
