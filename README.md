@@ -2,6 +2,8 @@
 
 Windows MFC progress control displaying a bitmap skin and time
 
+![SkinProgress](https://raw.githubusercontent.com/Kochise/SkinProgress/master/01-DualPreview.png)
+
 * Hardware and software needed
 
 You need the following to get this program working :
